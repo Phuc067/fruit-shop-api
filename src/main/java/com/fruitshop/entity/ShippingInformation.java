@@ -16,27 +16,23 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "shipping_informations")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product implements Serializable{
+public class ShippingInformation implements Serializable{
 
-	private static final long serialVersionUID = 8947300456531341086L;
+	private static final long serialVersionUID = 2415001664917445755L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String title;
-	private String description;
-	private String origin;
-	private Double price;
-	private Integer quantity;
-	private String image;
+	private String recipientName;
+	private String shippingAdress;
+	private String phone;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "categoryId", referencedColumnName = "id")
-	private Category category;
-	
-	
+	@JoinColumn(name = "user_id", referencedColumnName = "id")
+	private User user;
 }

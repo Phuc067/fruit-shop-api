@@ -1,6 +1,7 @@
 package com.fruitshop.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,27 +17,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "refresh_tokens")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product implements Serializable{
+public class RefreshToken implements Serializable{
 
-	private static final long serialVersionUID = 8947300456531341086L;
+	private static final long serialVersionUID = 5933857619240475829L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String title;
-	private String description;
-	private String origin;
-	private Double price;
-	private Integer quantity;
-	private String image;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "categoryId", referencedColumnName = "id")
-	private Category category;
+	private String token;
 	
+	private Instant expiredDate;
 	
+	@ManyToOne(fetch =  FetchType.LAZY)
+	@JoinColumn(name = "username", referencedColumnName = "username")
+	private Login login;
 }

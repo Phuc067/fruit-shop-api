@@ -3,12 +3,11 @@ package com.fruitshop.entity;
 import java.io.Serializable;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,27 +15,25 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product implements Serializable{
+public class User implements Serializable{
 
-	private static final long serialVersionUID = 8947300456531341086L;
+	private static final long serialVersionUID = -5865425017557784567L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String title;
-	private String description;
-	private String origin;
-	private Double price;
-	private Integer quantity;
-	private String image;
+	private String firstName;
+	private String lastName;
+	private String email;
+	private String phone;
+	private String gender;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "categoryId", referencedColumnName = "id")
-	private Category category;
-	
-	
+	@OneToOne
+	@JoinColumn(name = "username", referencedColumnName = "username")
+	private Login login;
 }

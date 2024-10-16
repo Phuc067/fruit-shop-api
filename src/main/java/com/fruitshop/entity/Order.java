@@ -1,6 +1,7 @@
 package com.fruitshop.entity;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,27 +17,28 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product implements Serializable{
+public class Order implements Serializable {
 
-	private static final long serialVersionUID = 8947300456531341086L;
+	private static final long serialVersionUID = -8806453286792167735L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String title;
-	private String description;
-	private String origin;
-	private Double price;
-	private Integer quantity;
-	private String image;
+	private Instant orderDate;
+	private Instant deliveryDate;
+	private String state;
+	private String recipientName;
+	private String recipientAddress;
+	private String phoneNumber;
+	private String paymentMethod;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "categoryId", referencedColumnName = "id")
-	private Category category;
-	
+	@JoinColumn(name = "user_id", referencedColumnName = "id")
+	private User user;
 	
 }

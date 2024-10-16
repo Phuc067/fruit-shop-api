@@ -16,27 +16,26 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name="cart_details")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Product implements Serializable{
+public class CartDetail  implements Serializable{
 
-	private static final long serialVersionUID = 8947300456531341086L;
+	private static final long serialVersionUID = 2830239165106570222L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	private String title;
-	private String description;
-	private String origin;
-	private Double price;
-	private Integer quantity;
-	private String image;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "categoryId", referencedColumnName = "id")
-	private Category category;
+	@JoinColumn(name = "user_id", referencedColumnName = "id")
+	private User user;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "product_id", referencedColumnName = "id")
+	private Product product;
 	
+	private int quantity;
 }
