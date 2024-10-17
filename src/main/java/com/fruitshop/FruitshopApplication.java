@@ -1,14 +1,14 @@
 package com.fruitshop;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.DependsOn;
 
-import com.fruitshop.repository.CategoryRepository;
 
 import jakarta.annotation.PostConstruct;
 
 @SpringBootApplication
+@DependsOn("applicationContextProvider")
 public class FruitshopApplication {
 
 //	@Autowired

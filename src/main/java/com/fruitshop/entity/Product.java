@@ -34,7 +34,7 @@ public class Product implements Serializable{
 	private Integer quantity;
 	private String image;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "categoryId", referencedColumnName = "id")
 	private Category category;
 	
