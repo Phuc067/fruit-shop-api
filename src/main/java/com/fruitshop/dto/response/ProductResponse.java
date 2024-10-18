@@ -1,4 +1,4 @@
-package com.fruitshop.dto;
+package com.fruitshop.dto.response;
 
 import com.fruitshop.entity.Category;
 

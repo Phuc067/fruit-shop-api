@@ -34,7 +34,7 @@ public class RefreshToken implements Serializable{
 	
 	private Instant expiredDate;
 	
-	@ManyToOne(fetch =  FetchType.LAZY)
+	@ManyToOne(fetch =  FetchType.EAGER)
 	@JoinColumn(name = "username", referencedColumnName = "username")
 	private Login login;
 }
