@@ -2,6 +2,8 @@ package com.fruitshop.entity;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,12 +29,19 @@ public class User implements Serializable{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
+	public User(Integer id){
+		this.id = id;
+	}
+	
 	private String firstName;
 	private String lastName;
 	private String email;
 	private String phone;
 	private String gender;
 	
+	
+	@JsonIgnore
 	@OneToOne
 	@JoinColumn(name = "username", referencedColumnName = "username")
 	private Login login;

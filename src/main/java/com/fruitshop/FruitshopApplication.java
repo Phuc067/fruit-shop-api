@@ -1,9 +1,11 @@
 package com.fruitshop;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.DependsOn;
 
+import com.fruitshop.repository.CartDetailRepository;
 
 import jakarta.annotation.PostConstruct;
 
@@ -11,14 +13,14 @@ import jakarta.annotation.PostConstruct;
 @DependsOn("applicationContextProvider")
 public class FruitshopApplication {
 
-//	@Autowired
-//	private CategoryRepository categoryRepository;
+	@Autowired
+	private CartDetailRepository cartDetailRepository;
 	public static void main(String[] args) {
 		SpringApplication.run(FruitshopApplication.class, args);
 	}
 	
 	@PostConstruct
 	public void run() {
-
+		System.out.println(cartDetailRepository.getCountProductByUserId(1));
 	}
 }

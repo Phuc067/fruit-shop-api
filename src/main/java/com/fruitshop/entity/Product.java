@@ -27,6 +27,11 @@ public class Product implements Serializable{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+	
+	public Product(Integer id) {
+		this.id = id;
+	}
+	
 	private String title;
 	private String description;
 	private String origin;

@@ -8,20 +8,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fruitshop.constant.ApiPath;
-import com.fruitshop.dto.request.LoginRequest;
+import com.fruitshop.dto.request.CartRequest;
 import com.fruitshop.model.ResponseObject;
-import com.fruitshop.service.AuthenticationService;
+import com.fruitshop.service.CartService;
 
 @RestController
-@RequestMapping(ApiPath.AUTH)
-public class AuthenticationController {
+@RequestMapping(ApiPath.CART)
+public class CartController {
 	
 	@Autowired
-	private AuthenticationService authenticationService;
-
-	@PostMapping("login")
-	public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest loginRequest) {
-		ResponseObject responseObject = authenticationService.login(loginRequest);
+	private CartService cartService;
+	
+	@PostMapping("")
+	public ResponseEntity<ResponseObject> addProductToCart(@RequestBody CartRequest cartRequest)
+	{
+		ResponseObject responseObject = cartService.addToCart(cartRequest);
 		return ResponseEntity.ok(responseObject);
 	}
+	
 }

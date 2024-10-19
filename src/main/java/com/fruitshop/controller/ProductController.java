@@ -13,7 +13,7 @@ import com.fruitshop.service.ProductService;
 
 
 @RestController
-@RequestMapping(ApiPath.API_PRODUCT)
+@RequestMapping(ApiPath.PRODUCT)
 public class ProductController {
 	
 	@Autowired

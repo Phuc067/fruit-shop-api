@@ -12,7 +12,10 @@ import com.fruitshop.dto.request.LoginRequest;
 import com.fruitshop.dto.response.AuthenticationResponse;
 import com.fruitshop.entity.Login;
 import com.fruitshop.entity.RefreshToken;
+import com.fruitshop.entity.User;
 import com.fruitshop.model.ResponseObject;
+import com.fruitshop.repository.CartDetailRepository;
+import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
@@ -31,6 +34,12 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 	@Autowired
 	private JwtService jwtService;
 
+	@Autowired
+	private UserRepository userRepository;
+	
+	
+	@Autowired
+	private CartDetailRepository cartDetailRepository;
 	@Override
 	public ResponseObject login(LoginRequest loginRequest) {
 		
@@ -42,7 +51,12 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		}
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
 		String jwtToken = jwtService.generateToken(login);
-		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken()));
+		
+		User user = userRepository.findByLogin(login);
+		int cartItem = 0;
+		if(ObjectUtils.isNotEmpty(user)) cartItem =  cartDetailRepository.getCountProductByUserId(user.getId());
+		
+		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), user, cartItem));
 	}
 
 }
