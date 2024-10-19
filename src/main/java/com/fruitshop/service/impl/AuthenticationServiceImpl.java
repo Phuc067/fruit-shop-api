@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
 
 import com.fruitshop.dto.request.LoginRequest;
 import com.fruitshop.dto.response.AuthenticationResponse;
@@ -16,6 +17,8 @@ import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
 
+
+@Service
 public class AuthenticationServiceImpl implements AuthenticationService{
 	
 	@Autowired

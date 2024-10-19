@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 import com.fruitshop.constant.SessionConstant;
 import com.fruitshop.entity.Login;
@@ -15,6 +16,8 @@ import com.fruitshop.repository.RefreshTokenRepository;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
 
+
+@Service
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
 	@Autowired
