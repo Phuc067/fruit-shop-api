@@ -21,6 +21,6 @@ public class FruitshopApplication {
 	
 	@PostConstruct
 	public void run() {
-		System.out.println(cartDetailRepository.getCountProductByUserId(1));
+//		System.out.println(cartDetailRepository.getCountProductByUserId(1));
 	}
 }

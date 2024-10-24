@@ -31,7 +31,7 @@ public class Invoice implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "order_id", referencedColumnName = "id")
 	private Order order;
 	

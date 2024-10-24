@@ -32,7 +32,7 @@ public class ShippingInformation implements Serializable{
 	private String shippingAdress;
 	private String phone;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id", referencedColumnName = "id")
 	private User user;
 }

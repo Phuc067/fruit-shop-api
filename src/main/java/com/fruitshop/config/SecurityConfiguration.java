@@ -10,6 +10,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.fruitshop.constant.ApiPath;
 import com.fruitshop.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class SecurityConfiguration {
 			.csrf()
 			.disable()
 			.authorizeHttpRequests()
-			.requestMatchers("/api/auth/**", "*/**").permitAll()
+			.requestMatchers(ApiPath.AUTH + "**", "*/**").permitAll()
 			.anyRequest().authenticated()
 				.and()
 			.sessionManagement()

@@ -6,11 +6,12 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
 import com.fruitshop.dto.request.CartRequest;
+import com.fruitshop.dto.response.CartResponse;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Product;
 import com.fruitshop.entity.User;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface CartMapper {
 
 	CartMapper INSTANT = Mappers.getMapper(CartMapper.class);
@@ -34,4 +35,8 @@ public interface CartMapper {
 		}
 		return new Product(productId);
 	}
+	
+	
+	 @Mapping(source = "product", target = "product")
+	    CartResponse toCartResponse(CartDetail cartDetail);
 }
