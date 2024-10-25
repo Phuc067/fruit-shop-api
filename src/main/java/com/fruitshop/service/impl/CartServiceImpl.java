@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fruitshop.dto.request.CartRequest;
 import com.fruitshop.dto.request.IntegerObject;
+import com.fruitshop.dto.request.ListInteger;
 import com.fruitshop.dto.response.CartResponse;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Product;
@@ -83,9 +84,9 @@ public class CartServiceImpl implements CartService{
 
 	@Override
 	public ResponseObject deleteCartDetail(Integer id) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Object object = authentication.getName();
-		System.out.println(object);
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//		Object object = authentication.getName();
+//		System.out.println(object);
 		Optional<CartDetail> cartDetail = cartDetailRepository.findById(id);
 		if(cartDetail.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết giỏ hàng", null);
 		cartDetailRepository.delete(cartDetail.get());
@@ -95,9 +96,9 @@ public class CartServiceImpl implements CartService{
 
 	@Override
 	@Transactional
-	public ResponseObject deleteCartDetails(List<Integer> ids) {
-		 cartDetailRepository.deleteCartItemsByIds(ids);
-		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", ids);
+	public ResponseObject deleteCartDetails(List<Integer> listId) {
+		cartDetailRepository.deleteCartItemsByIds(listId);
+		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", listId);
 	}
 
 }

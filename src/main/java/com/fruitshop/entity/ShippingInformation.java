@@ -31,6 +31,7 @@ public class ShippingInformation implements Serializable{
 	private String recipientName;
 	private String shippingAdress;
 	private String phone;
+	private Boolean isPrimary;
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "user_id", referencedColumnName = "id")

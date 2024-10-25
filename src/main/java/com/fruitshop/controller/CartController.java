@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fruitshop.constant.ApiPath;
@@ -47,13 +46,7 @@ public class CartController {
 		ResponseObject responseObject = cartService.updateProductQuantity(id,object);
 		return ResponseEntity.ok(responseObject);
 	}
-	
-	@DeleteMapping("/multiple")
-	public ResponseEntity<ResponseObject> deleteProductsFromCart(@RequestBody List<Integer> ids) {
-	    ResponseObject responseObject = cartService.deleteCartDetails(ids);
-	    return ResponseEntity.ok(responseObject);
-	}
-	
+
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ResponseObject> deleteProductFromCart(@PathVariable("id") Integer id)
 	{
@@ -61,6 +54,12 @@ public class CartController {
 		return ResponseEntity.ok(responseObject);
 	}
 	
-	
+	@PostMapping("/delete-multiple")
+	public ResponseEntity<ResponseObject> deleteProductsFromCart(@RequestBody List<Integer> ids) {
+	    ResponseObject responseObject = cartService.deleteCartDetails(ids);
+	    return ResponseEntity.ok(responseObject);
+	}
 
+	
+	
 }

@@ -15,5 +15,5 @@ public interface CartService {
 
 	ResponseObject deleteCartDetail(Integer id);
 
-	ResponseObject deleteCartDetails(List<Integer> ids);
+	ResponseObject deleteCartDetails(List<Integer> listId);
 }

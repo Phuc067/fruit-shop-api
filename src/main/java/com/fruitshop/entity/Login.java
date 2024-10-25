@@ -40,7 +40,7 @@ public class Login implements Serializable, UserDetails{
 	private String OTP;
 	private Boolean state;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "role_id", referencedColumnName = "id")
 	private Role role;
 
