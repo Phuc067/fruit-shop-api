@@ -20,7 +20,7 @@ public class ShippingInformationController {
 	private ShippingInformationService shippingInformationService;
 
 	@GetMapping("/{id}")
-	public ResponseEntity<ResponseObject> getShippingInformationOfUser(@PathVariable("id") Integer userId, @RequestParam("isPrimary") Boolean isPrimary )
+	public ResponseEntity<ResponseObject> getShippingInformationOfUser(@PathVariable("id") Integer userId, @RequestParam(value = "isPrimary", required=false) Boolean isPrimary )
 	{
 		ResponseObject responseObject = shippingInformationService.getShippingInformation(userId, isPrimary);
 		return ResponseEntity.ok(responseObject);

@@ -20,7 +20,7 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 
 	@Override
 	public ResponseObject getShippingInformation(Integer userId, Boolean isPrimary) {
-		if(!isPrimary) 
+		if(ObjectUtils.isEmpty(isPrimary) || !isPrimary) 
 		{
 			List<ShippingInformation> shippingInformations = shippingInformationRepository.findByUserId(userId);
 			return new ResponseObject(HttpStatus.OK, "Lấy danh sách địa chỉ nhận hàng thành công", shippingInformations);

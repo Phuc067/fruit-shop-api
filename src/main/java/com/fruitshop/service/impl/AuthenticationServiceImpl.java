@@ -50,7 +50,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 			return new ResponseObject(HttpStatus.UNAUTHORIZED,"Tài khoản chưa được xác thực, xin vui lòng xác thực tài khoản.", null);
 		}
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
-		String jwtToken = jwtService.generateToken(login);
+		String jwtToken = "Bearer " + jwtService.generateToken(login);
 		
 		User user = userRepository.findByLogin(login);
 		int cartItem = 0;
@@ -59,4 +59,12 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), user, cartItem));
 	}
 
+
+	
+	@Override
+	public ResponseObject logOut(String authHeader) {
+		String token = authHeader.replace("Bearer ", "");
+        jwtService.addTokenToBlacklist(token);
+        return new ResponseObject(HttpStatus.OK, "Đã vô hiệu hóa token", null);
+	}
 }

@@ -14,4 +14,7 @@ public interface JwtService {
 	String generateToken(Map<String, Object> extraClaims, UserDetails userDetails);
 	String generateToken(UserDetails userDetails);
 	Boolean isTokenValid(String token, UserDetails userDetails);
+	public void addTokenToBlacklist(String token);
+
+	public boolean isTokenBlacklisted(String token);
 }

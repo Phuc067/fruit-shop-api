@@ -3,7 +3,9 @@ package com.fruitshop.service.impl;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,8 @@ import io.jsonwebtoken.security.Keys;
 public class JwtServiceImpl implements JwtService {
 
 	private static final String SECRET_KEY= "9b0018390ea10824da5c121db8fed4fbb8ac27f9cbfef612212c76c3fa94c572";
+	
+	private static Set<String> blackList = new HashSet<>();
 	
 	@Override
 	public String extractUsername(String token) {
@@ -81,4 +85,13 @@ public class JwtServiceImpl implements JwtService {
 		return extractClaims(token, Claims::getExpiration);
 	}
 	
+	@Override
+	public void addTokenToBlacklist(String token) {
+		blackList.add(token);
+	}
+
+	@Override
+	public boolean isTokenBlacklisted(String token) {
+		return blackList.contains(token);
+	}
 }
