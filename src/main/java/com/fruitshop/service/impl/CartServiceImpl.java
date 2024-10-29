@@ -18,11 +18,14 @@ import com.fruitshop.dto.request.ListInteger;
 import com.fruitshop.dto.response.CartResponse;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Product;
+import com.fruitshop.entity.User;
 import com.fruitshop.mapper.CartMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CartDetailRepository;
 import com.fruitshop.repository.ProductRepository;
+import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.CartService;
+import com.fruitshop.utils.AuthenticationUtils;
 
 @Service
 public class CartServiceImpl implements CartService{
@@ -33,8 +36,17 @@ public class CartServiceImpl implements CartService{
 	@Autowired
 	private ProductRepository productRepository;
 	
+	@Autowired
+	private UserRepository userRepository;
+	
 	@Override
 	public ResponseObject addToCart(CartRequest cartRequest) {
+		Integer userId = cartRequest.getUserId();
+		Optional<User> userDB = userRepository.findById(userId);
+		if(userDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tồn tại người dùng có id là " + userId, null);
+		String username = userDB.get().getLogin().getUsername();
+		
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
 		
 		CartDetail cartDetail = cartDetailRepository.findByUserIdAndProductId(cartRequest.getProductId(), cartRequest.getUserId());
 		if(ObjectUtils.isEmpty(cartDetail))
@@ -55,6 +67,13 @@ public class CartServiceImpl implements CartService{
 
 	@Override
 	public ResponseObject getByUserId(int userId) {
+		
+		Optional<User> userDB = userRepository.findById(userId);
+		if(userDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tồn tại người dùng có id là " + userId, null);
+		String username = userDB.get().getLogin().getUsername();
+		
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+		
 		List<CartDetail> cartDetails =  cartDetailRepository.findByUserId(userId);
 		List<CartResponse> cartResponses = new ArrayList<CartResponse>();
 		for(CartDetail cartDetail: cartDetails) {
@@ -68,13 +87,17 @@ public class CartServiceImpl implements CartService{
 
 	@Override
 	public ResponseObject updateProductQuantity(Integer id , IntegerObject object) {
-		if(ObjectUtils.isEmpty(object)) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Số lượng không hợp lệ", null);
-		int quantity = object.getValue();
 		
 		Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
 		if(ObjectUtils.isEmpty(cartDetailDB)) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng", null);
 		
 		CartDetail cartDetail = cartDetailDB.get();
+		String username = cartDetail.getUser().getLogin().getUsername();
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+		
+		if(ObjectUtils.isEmpty(object)) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Số lượng không hợp lệ", null);
+		int quantity = object.getValue();
+		
 		if( quantity <= 0 || quantity > cartDetail.getProduct().getQuantity()) return new ResponseObject(HttpStatus.BAD_REQUEST,"Số lượng còn lại của sản phẩm không đủ", null);
 
 		cartDetail.setQuantity(quantity);
@@ -84,21 +107,34 @@ public class CartServiceImpl implements CartService{
 
 	@Override
 	public ResponseObject deleteCartDetail(Integer id) {
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//		Object object = authentication.getName();
-//		System.out.println(object);
-		Optional<CartDetail> cartDetail = cartDetailRepository.findById(id);
-		if(cartDetail.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết giỏ hàng", null);
-		cartDetailRepository.delete(cartDetail.get());
-		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", id);
+		Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
+		if(cartDetailDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết giỏ hàng", null);
+		CartDetail cartDetail = cartDetailDB.get();
+		String username = cartDetail.getUser().getLogin().getUsername();
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
 		
+		cartDetailRepository.delete(cartDetail);
+		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", id);
 	}
 
 	@Override
 	@Transactional
 	public ResponseObject deleteCartDetails(List<Integer> listId) {
-		cartDetailRepository.deleteCartItemsByIds(listId);
-		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", listId);
+		try {
+			for(Integer id: listId) {
+				Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
+				if(cartDetailDB.isEmpty()) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng", null);
+				CartDetail cartDetail = cartDetailDB.get();
+				String username = cartDetail.getUser().getLogin().getUsername();
+				if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+				cartDetailRepository.delete(cartDetail);
+				
+			}
+			return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", listId);
+		} catch (Exception e) {
+			return new ResponseObject(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi xử lý với database", null);
+		}
+
 	}
 
 }

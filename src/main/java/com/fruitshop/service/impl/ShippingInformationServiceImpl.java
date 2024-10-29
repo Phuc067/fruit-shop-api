@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fruitshop.dto.request.ShippingInformationRequest;
@@ -16,6 +18,7 @@ import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.ShippingInformationRepository;
 import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.ShippingInformationService;
+import com.fruitshop.utils.AuthenticationUtils;
 
 @Service
 public class ShippingInformationServiceImpl implements ShippingInformationService{
@@ -28,6 +31,13 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 
 	@Override
 	public ResponseObject getShippingInformation(Integer userId, Boolean isPrimary) {
+		
+		Optional<User> userDB = userRepository.findById(userId);
+		if(userDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tồn tại người dùng có id là " + userId, null);
+		String username = userDB.get().getLogin().getUsername();
+		
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+		
 		if(ObjectUtils.isEmpty(isPrimary) || !isPrimary) 
 		{
 			List<ShippingInformation> shippingInformations = shippingInformationRepository.findByUserId(userId);
@@ -49,6 +59,8 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 	public ResponseObject createShippingInformation(ShippingInformationRequest request) {
 		Optional<User> userDB = userRepository.findById(request.getUserId());
 		if(userDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tồn tại người dùng có id là " + request.getUserId(), null);
+		String username = userDB.get().getLogin().getUsername();
+		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
 		ShippingInformation shippingInformation = ShippingInformationMapper.INSTANT.toShippingInformation(request);
 		shippingInformationRepository.save(shippingInformation);
 		return new ResponseObject(HttpStatus.CREATED, "Thêm địa chỉ nhận hàng thành công", null);
