@@ -1,19 +1,27 @@
 package com.fruitshop.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.fruitshop.dto.request.ShippingInformationRequest;
 import com.fruitshop.entity.ShippingInformation;
+import com.fruitshop.entity.User;
+import com.fruitshop.mapper.ShippingInformationMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.ShippingInformationRepository;
+import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.ShippingInformationService;
 
 @Service
 public class ShippingInformationServiceImpl implements ShippingInformationService{
+	
+	@Autowired
+	private UserRepository userRepository;
 	
 	@Autowired
 	private ShippingInformationRepository shippingInformationRepository;
@@ -35,6 +43,15 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 			return new ResponseObject(HttpStatus.OK, "Lấy địa chỉ nhận hàng thành công", shippingInformations.get(0));
 		else 
 			return new ResponseObject(HttpStatus.OK, "Người dùng này chưa có địa chỉ nhận hàng", null);
+	}
+
+	@Override
+	public ResponseObject createShippingInformation(ShippingInformationRequest request) {
+		Optional<User> userDB = userRepository.findById(request.getUserId());
+		if(userDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tồn tại người dùng có id là " + request.getUserId(), null);
+		ShippingInformation shippingInformation = ShippingInformationMapper.INSTANT.toShippingInformation(request);
+		shippingInformationRepository.save(shippingInformation);
+		return new ResponseObject(HttpStatus.CREATED, "Thêm địa chỉ nhận hàng thành công", null);
 	}
 
 	

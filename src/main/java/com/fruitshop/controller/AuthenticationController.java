@@ -11,8 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fruitshop.constant.ApiPath;
 import com.fruitshop.dto.request.LoginRequest;
+import com.fruitshop.dto.request.RefreshTokenRequest;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.service.AuthenticationService;
+import com.fruitshop.service.RefreshTokenService;
+
 
 @RestController
 @RequestMapping(ApiPath.AUTH)
@@ -20,10 +23,19 @@ public class AuthenticationController {
 	
 	@Autowired
 	private AuthenticationService authenticationService;
+	
+	@Autowired
+	private RefreshTokenService refreshTokenService;
 
 	@PostMapping("login")
 	public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest loginRequest) {
 		ResponseObject responseObject = authenticationService.login(loginRequest);
+		return ResponseEntity.ok(responseObject);
+	}
+	@PostMapping("refresh-token")
+	public ResponseEntity<ResponseObject> getRefreshToken(@RequestBody RefreshTokenRequest request)
+	{
+		ResponseObject responseObject =  refreshTokenService.genarateAccessToken(request.getRefreshToken());
 		return ResponseEntity.ok(responseObject);
 	}
 	

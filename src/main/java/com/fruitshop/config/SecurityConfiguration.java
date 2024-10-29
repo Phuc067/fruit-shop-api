@@ -35,7 +35,9 @@ public class SecurityConfiguration {
 			.csrf()
 			.disable()
 			.authorizeHttpRequests()
-			.requestMatchers(ApiPath.AUTH + "login", ApiPath.PUBLIC + "**").permitAll()
+			.requestMatchers(ApiPath.AUTH + "login",
+							ApiPath.AUTH + "refresh-token",
+							ApiPath.PUBLIC + "**").permitAll()
 			.anyRequest().authenticated()
 				.and()
 			.sessionManagement()

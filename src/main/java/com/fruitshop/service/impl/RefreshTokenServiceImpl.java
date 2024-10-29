@@ -64,7 +64,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 			refreshTokenRepository.delete(refreshToken);
 			return new ResponseObject(HttpStatus.BAD_REQUEST,"Token đã hết hạn.", null);
 		}
-		String accessToken = jwtService.generateToken(refreshToken.getLogin());
+		String accessToken = "Bearer " +  jwtService.generateToken(refreshToken.getLogin());
 		return new ResponseObject(HttpStatus.OK, "Tạo access token thành công.", accessToken);
 	}
 	

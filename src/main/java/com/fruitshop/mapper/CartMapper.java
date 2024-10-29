@@ -38,5 +38,5 @@ public interface CartMapper {
 	
 	
 	 @Mapping(source = "product", target = "product")
-	    CartResponse toCartResponse(CartDetail cartDetail);
+	 CartResponse toCartResponse(CartDetail cartDetail);
 }
