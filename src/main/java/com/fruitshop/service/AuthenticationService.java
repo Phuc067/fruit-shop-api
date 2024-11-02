@@ -5,6 +5,4 @@ import com.fruitshop.model.ResponseObject;
 
 public interface AuthenticationService {
 	ResponseObject login(LoginRequest loginRequest);
-	ResponseObject logOut(String authHeader);
-	
 }

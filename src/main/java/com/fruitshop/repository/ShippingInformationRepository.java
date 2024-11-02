@@ -14,4 +14,7 @@ public interface ShippingInformationRepository extends JpaRepository<ShippingInf
 
 	ShippingInformation findByUserIdAndIsPrimary(Integer userId, Boolean isPrimary);
 
+	Boolean existsByUserIdAndRecipientNameAndShippingAdressAndPhone(Integer userId, String recipientName,
+			String shippingAdress, String phone);
+
 }

@@ -18,7 +18,7 @@ import com.fruitshop.service.RefreshTokenService;
 
 
 @RestController
-@RequestMapping(ApiPath.AUTH)
+@RequestMapping("")
 public class AuthenticationController {
 	
 	@Autowired
@@ -27,21 +27,22 @@ public class AuthenticationController {
 	@Autowired
 	private RefreshTokenService refreshTokenService;
 
-	@PostMapping("login")
+	@PostMapping(ApiPath.LOGIN)
 	public ResponseEntity<ResponseObject> login(@RequestBody LoginRequest loginRequest) {
 		ResponseObject responseObject = authenticationService.login(loginRequest);
 		return ResponseEntity.ok(responseObject);
 	}
-	@PostMapping("refresh-token")
+	@PostMapping(ApiPath.REFRESH_TOKEN)
 	public ResponseEntity<ResponseObject> getRefreshToken(@RequestBody RefreshTokenRequest request)
 	{
 		ResponseObject responseObject =  refreshTokenService.genarateAccessToken(request.getRefreshToken());
 		return ResponseEntity.ok(responseObject);
 	}
 	
-	@GetMapping("")
-	public ResponseEntity<ResponseObject> logout(@RequestHeader("Authorization") String authHeader){
-		ResponseObject responseObject = authenticationService.logOut(authHeader);
-		return ResponseEntity.ok(responseObject);
-	}
+//	@GetMapping(ApiPath.LOGOUT)
+//	public ResponseEntity<ResponseObject> logout(){
+//		System.out.println("ngu");
+//		ResponseObject responseObject = authenticationService.logOut();
+//		return ResponseEntity.ok(responseObject);
+//	}
 }

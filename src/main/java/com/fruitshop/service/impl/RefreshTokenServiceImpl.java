@@ -15,6 +15,7 @@ import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.RefreshTokenRepository;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
+import com.fruitshop.utils.TimeUtils;
 
 
 @Service
@@ -30,26 +31,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 	public RefreshToken createRefreshToken(Login login)
 	{
 		RefreshToken refreshToken = refreshTokenRepository.findByLogin(login);
-		if(refreshToken!=null)
-		{
-			if(isExpired(refreshToken))
-			{
-				refreshTokenRepository.delete(refreshToken);
-				RefreshToken newRefreshToken = new RefreshToken();
-				newRefreshToken.setLogin(login);
-				newRefreshToken.setExpiredDate(Instant.now().plusMillis(SessionConstant.REFRESH_TOKEN_EXPRIRY_TIME));
-				newRefreshToken.setToken(UUID.randomUUID().toString());
-				return refreshTokenRepository.save(newRefreshToken);
-			}
-			else return refreshToken;
-		}
-		else {
-			RefreshToken newRefreshToken = new RefreshToken();
-			newRefreshToken.setLogin(login);
-			newRefreshToken.setExpiredDate(Instant.now().plusMillis(SessionConstant.REFRESH_TOKEN_EXPRIRY_TIME));
-			newRefreshToken.setToken(UUID.randomUUID().toString());
-			return refreshTokenRepository.save(newRefreshToken);
-		}
+		if(ObjectUtils.isEmpty(refreshToken)) refreshToken.setLogin(login);
+		refreshToken.setToken(UUID.randomUUID().toString());
+		refreshToken.setExpiredDate(TimeUtils.getInstantNow().plusMillis(SessionConstant.REFRESH_TOKEN_EXPRIRY_TIME));
+		return refreshTokenRepository.save(refreshToken);
+			
 	}
 
 	@Override
@@ -72,4 +58,5 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 	{
 		return refreshToken.getExpiredDate().compareTo(Instant.now()) < 0 ? true : false;
 	}
+
 }

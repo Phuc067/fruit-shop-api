@@ -3,7 +3,11 @@ package com.fruitshop.entity;
 import java.io.Serializable;
 import java.time.Instant;
 
+import com.fruitshop.constant.OrderStatus;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -31,7 +35,8 @@ public class Order implements Serializable {
 	private Integer id;
 	private Instant orderDate;
 	private Instant deliveryDate;
-	private String state;
+	@Enumerated(EnumType.STRING) 
+    private OrderStatus state;
 	private String recipientName;
 	private String recipientAddress;
 	private String phoneNumber;

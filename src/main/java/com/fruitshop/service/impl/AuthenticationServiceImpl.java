@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.fruitshop.dto.request.LoginRequest;
@@ -19,6 +20,7 @@ import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
+import com.fruitshop.utils.AuthenticationUtils;
 
 
 @Service
@@ -37,7 +39,6 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 	@Autowired
 	private UserRepository userRepository;
 	
-	
 	@Autowired
 	private CartDetailRepository cartDetailRepository;
 	@Override
@@ -49,7 +50,9 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		if (ObjectUtils.isNotEmpty(login) && !login.getState()) {
 			return new ResponseObject(HttpStatus.UNAUTHORIZED,"Tài khoản chưa được xác thực, xin vui lòng xác thực tài khoản.", null);
 		}
+		
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
+		
 		String jwtToken = "Bearer " + jwtService.generateToken(login);
 		
 		User user = userRepository.findByLogin(login);
@@ -59,12 +62,5 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), user, cartItem));
 	}
 
-
 	
-	@Override
-	public ResponseObject logOut(String authHeader) {
-		String token = authHeader.replace("Bearer ", "");
-        jwtService.addTokenToBlacklist(token);
-        return new ResponseObject(HttpStatus.OK, "Đã vô hiệu hóa token", null);
-	}
 }

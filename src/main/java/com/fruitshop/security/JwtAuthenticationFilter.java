@@ -1,8 +1,10 @@
 package com.fruitshop.security;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,11 +38,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			throws ServletException, IOException {
 
 		String requestURI = request.getRequestURI();
-		if (requestURI.startsWith(ApiPath.PUBLIC) || requestURI.startsWith(ApiPath.AUTH)) {
+		if (requestURI.startsWith(ApiPath.PUBLIC) || requestURI.equals(ApiPath.LOGIN) || requestURI.equals(ApiPath.REFRESH_TOKEN)) {
 			filterChain.doFilter(request, response);
 			return;
 		}
-
+		
 		final String authHeader = request.getHeader("Authorization");
 		final String jwt;
 		final String username;
@@ -51,23 +53,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 		
 		jwt = authHeader.substring(7);
+		
+	
+		if (jwt != null && jwtService.isTokenBlacklisted(jwt)) {
+	        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	        writeJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token is blacklisted");
+	        return;
+	    }
 
-		if (jwt != null && jwtService.isTokenBlacklisted(jwt) ) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			return;
-		}
-		try {
-			if (jwtService.isTokenExpired(jwt)) {
-				System.out.println(jwtService.isTokenBlacklisted(jwt));
-				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-				return;
-			}
-			username = jwtService.extractUsername(jwt);
+	    if (requestURI.equals(ApiPath.LOGOUT)) {
+	        jwtService.addTokenToBlacklist(jwt);
+	        response.setStatus(HttpServletResponse.SC_OK);
+	        return;
+	    }
 
-		} catch (ExpiredJwtException e) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			return;
-		}
+	    try {
+	        if (jwtService.isTokenExpired(jwt)) {
+	            writeJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "jwt expired");
+	            return;
+	        }
+	        username = jwtService.extractUsername(jwt);
+
+	    } catch (ExpiredJwtException e) {
+	        writeJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "jwt expired");
+	        return;
+	    }
 
 		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -79,6 +89,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 		}
 		filterChain.doFilter(request, response);
+	}
+	
+	private void writeJsonResponse(HttpServletResponse response, int status, String message) throws IOException {
+	    response.setContentType("application/json");
+	    response.setStatus(status);
+	    ObjectMapper mapper = new ObjectMapper();
+	    String json = mapper.writeValueAsString(Map.of("message", message));
+	    response.getWriter().write(json);
 	}
 
 }

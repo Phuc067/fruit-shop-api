@@ -15,7 +15,7 @@ public interface JwtService {
 	String generateToken(UserDetails userDetails);
 	Boolean isTokenValid(String token, UserDetails userDetails);
 	Boolean isTokenExpired(String token);
+	
 	public void addTokenToBlacklist(String token);
-
 	public boolean isTokenBlacklisted(String token);
 }

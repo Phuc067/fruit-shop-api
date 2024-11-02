@@ -10,4 +10,5 @@ public class AuthenticationUtils {
 		String authUsername = authentication.getName();
 		return username.equals(authUsername);
 	}
+	
 }
