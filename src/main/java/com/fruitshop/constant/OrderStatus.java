@@ -2,6 +2,7 @@ package com.fruitshop.constant;
 
 public enum OrderStatus {
 	PENDING("Pending"), 
+	AWAITING_PAYMENT("Awaiting Payment"),
 	CONFIRMED("Confirmed"), 
 	PACKING("Packing"), 
 	SHIPPED("Shipped"), 
@@ -19,4 +20,5 @@ public enum OrderStatus {
 	public String getDisplayName() {
 		return displayName;
 	}
+	
 }

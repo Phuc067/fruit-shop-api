@@ -15,6 +15,7 @@ import com.fruitshop.dto.request.ShippingInformationRequest;
 import com.fruitshop.dto.request.ShippingInformationUpdate;
 import com.fruitshop.entity.ShippingInformation;
 import com.fruitshop.entity.User;
+import com.fruitshop.exception.CustomException;
 import com.fruitshop.mapper.ShippingInformationMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.ShippingInformationRepository;
@@ -83,12 +84,12 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 	public ResponseObject updateShippingInformation(Integer id, ShippingInformationUpdate request) {
 		Optional<ShippingInformation> shippingInformationDB = shippingInformationRepository.findById(id);
 		if (shippingInformationDB.isEmpty())
-			return new ResponseObject(HttpStatus.NOT_FOUND, "Địa chỉ nhận hàng không tồn tại ", null);
+			throw new CustomException(HttpStatus.NOT_FOUND, "Địa chỉ nhận hàng không tồn tại ");
 		ShippingInformation shippingInformation = shippingInformationDB.get();
 
 		String username = shippingInformation.getUser().getLogin().getUsername();
 		if (!AuthenticationUtils.isAuthenticate(username))
-			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+			throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên");
 		
 		if (shippingInformation.getRecipientName().equals(request.getRecipientName())
 				&& shippingInformation.getShippingAdress().equals(request.getShippingAdress())
@@ -113,7 +114,7 @@ public class ShippingInformationServiceImpl implements ShippingInformationServic
 		if (shippingInformationRepository.existsByUserIdAndRecipientNameAndShippingAdressAndPhone(
 				shippingInformation.getUser().getId(), request.getRecipientName(), request.getShippingAdress(),
 				request.getPhone()))
-			return new ResponseObject(HttpStatus.CONFLICT, "Địa chỉ này bị trùng lặp", null);
+			throw new CustomException(HttpStatus.CONFLICT, "Địa chỉ này bị trùng lặp");
 
 		if (request.getIsPrimary() && !shippingInformation.getIsPrimary()) {
 			setPrimaryToFalse(shippingInformation.getUser().getId());

@@ -11,5 +11,5 @@ public class ApiPath {
 	public static final String CART = BASE_URL+ "carts";
 	public static final String SHIPPING_INFORMATION = BASE_URL +"shipping-informations";
 	public static final String ORDER = BASE_URL+ "orders";
-	
+	public static final String PAY = BASE_URL +"pay";
 }

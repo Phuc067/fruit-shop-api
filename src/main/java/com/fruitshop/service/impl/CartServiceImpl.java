@@ -19,6 +19,7 @@ import com.fruitshop.dto.response.CartResponse;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Product;
 import com.fruitshop.entity.User;
+import com.fruitshop.exception.CustomException;
 import com.fruitshop.mapper.CartMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CartDetailRepository;
@@ -89,16 +90,16 @@ public class CartServiceImpl implements CartService{
 	public ResponseObject updateProductQuantity(Integer id , IntegerObject object) {
 		
 		Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
-		if(ObjectUtils.isEmpty(cartDetailDB)) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng", null);
+		if(ObjectUtils.isEmpty(cartDetailDB)) throw new CustomException(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng");
 		
 		CartDetail cartDetail = cartDetailDB.get();
 		String username = cartDetail.getUser().getLogin().getUsername();
-		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+		if(!AuthenticationUtils.isAuthenticate(username))throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên");
 		
-		if(ObjectUtils.isEmpty(object)) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Số lượng không hợp lệ", null);
+		if(ObjectUtils.isEmpty(object)) throw new CustomException(HttpStatus.BAD_REQUEST, "Số lượng không hợp lệ");
 		int quantity = object.getValue();
 		
-		if( quantity <= 0 || quantity > cartDetail.getProduct().getQuantity()) return new ResponseObject(HttpStatus.BAD_REQUEST,"Số lượng còn lại của sản phẩm không đủ", null);
+		if( quantity <= 0 || quantity > cartDetail.getProduct().getQuantity()) throw new CustomException(HttpStatus.BAD_REQUEST,"Số lượng còn lại của sản phẩm không đủ");
 
 		cartDetail.setQuantity(quantity);
 		cartDetailRepository.save(cartDetail);
@@ -108,10 +109,10 @@ public class CartServiceImpl implements CartService{
 	@Override
 	public ResponseObject deleteCartDetail(Integer id) {
 		Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
-		if(cartDetailDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết giỏ hàng", null);
+		if(cartDetailDB.isEmpty())throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy chi tiết giỏ hàng");
 		CartDetail cartDetail = cartDetailDB.get();
 		String username = cartDetail.getUser().getLogin().getUsername();
-		if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+		if(!AuthenticationUtils.isAuthenticate(username))throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên");
 		
 		cartDetailRepository.delete(cartDetail);
 		return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", id);
@@ -123,16 +124,15 @@ public class CartServiceImpl implements CartService{
 		try {
 			for(Integer id: listId) {
 				Optional<CartDetail> cartDetailDB = cartDetailRepository.findById(id);
-				if(cartDetailDB.isEmpty()) return new  ResponseObject(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng", null);
+				if(cartDetailDB.isEmpty()) throw new CustomException(HttpStatus.BAD_REQUEST, "Sản phẩm không tồn tại trong giỏ hàng");
 				CartDetail cartDetail = cartDetailDB.get();
 				String username = cartDetail.getUser().getLogin().getUsername();
-				if(!AuthenticationUtils.isAuthenticate(username))return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên", null);
+				if(!AuthenticationUtils.isAuthenticate(username))throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên");
 				cartDetailRepository.delete(cartDetail);
-				
 			}
 			return new ResponseObject(HttpStatus.ACCEPTED, "Xóa thành công", listId);
 		} catch (Exception e) {
-			return new ResponseObject(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi xử lý với database", null);
+			throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi xử lý với database");
 		}
 
 	}
