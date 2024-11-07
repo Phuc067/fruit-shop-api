@@ -61,6 +61,4 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		
 		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), user, cartItem));
 	}
-
-	
 }

@@ -20,8 +20,6 @@ public class ProductServiceImpl implements ProductService{
 	@Autowired
 	private ProductRepository productRepository;
 	
-
-	
 	@Override
 	public ResponseObject getAll() {
 		List<Product> products =  productRepository.findAll();

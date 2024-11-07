@@ -10,14 +10,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.fruitshop.config.VNPAYConfig;
+import com.fruitshop.constant.PaymentMethod;
+import com.fruitshop.entity.Invoice;
 import com.fruitshop.entity.Order;
 import com.fruitshop.entity.OrderDetail;
+import com.fruitshop.exception.CustomException;
 import com.fruitshop.model.ResponseObject;
+import com.fruitshop.repository.InvoiceRepository;
 import com.fruitshop.repository.OrderDetailRepository;
 import com.fruitshop.repository.OrderRepository;
 import com.fruitshop.service.OrderService;
@@ -34,19 +39,30 @@ public class VNPayServiceImpl implements VNPayService{
 	
 	@Autowired
 	private OrderDetailRepository orderDetailRepository;
+	
+	@Autowired
+	private InvoiceRepository invoiceRepository;
+	
 	@Override
-	public ResponseObject getPaymentURL(HttpServletRequest request, Integer orderId) throws UnsupportedEncodingException {
+	public ResponseObject createPaymentURL(HttpServletRequest request, Integer orderId) throws UnsupportedEncodingException {
 		String orderType = "other";
 		
 		Optional<Order> orderDB = orderRepository.findById(orderId);
-		if(orderDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+		if(orderDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng");
 		
 		Order order = orderDB.get();
 		String username =  order.getUser().getLogin().getUsername();
 		if(!AuthenticationUtils.isAuthenticate(username)) 
-			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
+			 throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
 		
-		int amount = 0 ;
+		if(!order.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName()))
+			 return new ResponseObject(HttpStatus.BAD_REQUEST, "Đơn hàng này không được thanh toán bằng VNpay", null);
+		
+		Invoice invoice = invoiceRepository.findByOrder(order);
+		if(ObjectUtils.isNotEmpty(invoice))
+			return new ResponseObject(HttpStatus.ALREADY_REPORTED, "Đơn hàng này đã được thanh toán thành công", null);
+		
+		int amount = 0;
 		List<OrderDetail> orderDetails = orderDetailRepository.findByOrder(order);
 		
 		for(OrderDetail orderDetail: orderDetails) {
