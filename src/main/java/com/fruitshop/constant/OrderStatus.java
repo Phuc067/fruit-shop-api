@@ -16,6 +16,16 @@ public enum OrderStatus {
 	OrderStatus(String displayName) {
 		this.displayName = displayName;
 	}
+	
+	public static OrderStatus fromDisplayName(String displayName) {
+	    for (OrderStatus status : OrderStatus.values()) {
+	        if (status.getDisplayName().equalsIgnoreCase(displayName)) {
+	            return status;
+	        }
+	    }
+	    throw new IllegalArgumentException("No enum constant with: " + displayName);
+	}
+
 
 	public String getDisplayName() {
 		return displayName;

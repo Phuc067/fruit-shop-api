@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 
 import com.fruitshop.dto.request.LoginRequest;
 import com.fruitshop.dto.response.AuthenticationResponse;
+import com.fruitshop.dto.response.UserResponse;
 import com.fruitshop.entity.Login;
 import com.fruitshop.entity.RefreshToken;
 import com.fruitshop.entity.User;
+import com.fruitshop.mapper.UserMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CartDetailRepository;
 import com.fruitshop.repository.UserRepository;
@@ -56,9 +58,11 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		String jwtToken = "Bearer " + jwtService.generateToken(login);
 		
 		User user = userRepository.findByLogin(login);
+		UserResponse userResponse = UserMapper.INSTANT.entityToResponse(user);
+		userResponse.setUsername(loginRequest.getUsername());
 		int cartItem = 0;
 		if(ObjectUtils.isNotEmpty(user)) cartItem =  cartDetailRepository.getCountProductByUserId(user.getId());
 		
-		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), user, cartItem));
+		return new ResponseObject(HttpStatus.OK, "Đăng nhập thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), userResponse, cartItem));
 	}
 }

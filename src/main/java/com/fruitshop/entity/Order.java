@@ -33,8 +33,7 @@ public class Order implements Serializable {
 	private static final long serialVersionUID = -8806453286792167735L;
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	private String id;
 	private Instant orderDate;
 	private Instant deliveryDate;
 	@Enumerated(EnumType.STRING) 

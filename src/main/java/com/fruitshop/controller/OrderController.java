@@ -28,4 +28,10 @@ public class OrderController {
 		ResponseObject responseObject = orderService.createOrder(request);
 		return ResponseEntity.ok(responseObject);
 	}
+	
+	@GetMapping("")
+	ResponseEntity<ResponseObject> getOrderHistory(@RequestParam("userId") Integer userId){
+		ResponseObject responseObject = orderService.getAllOrderOfUser(userId);
+		return ResponseEntity.ok(responseObject);
+	}
 }

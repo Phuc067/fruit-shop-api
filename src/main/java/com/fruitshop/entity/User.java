@@ -1,9 +1,8 @@
 package com.fruitshop.entity;
 
 import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import java.time.LocalDate;
+import java.util.Date;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -11,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,10 +39,12 @@ public class User implements Serializable{
 	private String lastName;
 	private String email;
 	private String phone;
+	@Temporal(TemporalType.DATE)
+	private Date birthDay;
 	private String gender;
+	private String avatar;
 	
 	
-	@JsonIgnore
 	@OneToOne
 	@JoinColumn(name = "username", referencedColumnName = "username")
 	private Login login;

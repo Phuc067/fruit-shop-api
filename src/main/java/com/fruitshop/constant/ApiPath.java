@@ -8,8 +8,9 @@ public class ApiPath {
 	private  static final String BASE_URL = "/api/";
 	public static final String PUBLIC = BASE_URL + "public/";
 	public static final String PRODUCT = BASE_URL + "products";
-	public static final String CART = BASE_URL+ "carts";
-	public static final String SHIPPING_INFORMATION = BASE_URL +"shipping-informations";
+	public static final String CART = BASE_URL + "carts";
+	public static final String SHIPPING_INFORMATION = BASE_URL + "shipping-informations";
 	public static final String ORDER = BASE_URL+ "orders";
-	public static final String PAY = BASE_URL +"payments";
+	public static final String PAY = BASE_URL + "payments";
+	public static final String USER = BASE_URL+ "users";
 }
