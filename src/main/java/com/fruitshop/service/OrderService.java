@@ -5,6 +5,5 @@ import com.fruitshop.model.ResponseObject;
 
 public interface OrderService {
 	ResponseObject createOrder(OrderRequest request);
-	ResponseObject getAllOrderOfUser(Integer userId);
 	ResponseObject getListOrderByUserIdAndState(Integer userId, String state);
 }

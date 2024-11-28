@@ -126,28 +126,6 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public ResponseObject getAllOrderOfUser(Integer userId) {
-		Optional<User> userDB = usererRepository.findById(userId);
-		if (userDB.isEmpty())
-			return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng", null);
-		User user = userDB.get();
-
-		if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
-			throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
-
-		List<Order> orders = orderRepository.findByUserId(userId);
-
-		List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orders);
-
-		for (OrderReponse orderReponse : orderReponses) {
-			List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
-			orderReponse.setOrderDetails(orderDetails);
-		}
-
-		return new ResponseObject(HttpStatus.OK, "Lấy danh sách đơn hàng thành công", orderReponses);
-	}
-
-	@Override
 	public ResponseObject getListOrderByUserIdAndState(Integer userId, String state) {
 		Optional<User> userDB = usererRepository.findById(userId);
 		if (userDB.isEmpty())
@@ -157,7 +135,9 @@ public class OrderServiceImpl implements OrderService {
 		if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
 			throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
 
-		List<Order> orders = orderRepository.findByUserIdAndState(userId, OrderStatus.fromDisplayName(state));
+		System.out.println(state + " "+ state == "");
+
+		List<Order> orders = state.equals("") ? orderRepository.findByUserId(userId) : orderRepository.findByUserIdAndState(userId, OrderStatus.fromDisplayName(state));
 
 		List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orders);
 

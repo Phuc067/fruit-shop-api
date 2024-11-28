@@ -30,8 +30,9 @@ public class OrderController {
 	}
 	
 	@GetMapping("")
-	ResponseEntity<ResponseObject> getOrderHistory(@RequestParam("userId") Integer userId){
-		ResponseObject responseObject = orderService.getAllOrderOfUser(userId);
+	ResponseEntity<ResponseObject> getOrderHistory(@RequestParam("userId") Integer userId,  
+												@RequestParam(value = "state", required = false, defaultValue = "") String state){
+		ResponseObject responseObject = orderService.getListOrderByUserIdAndState(userId, state);
 		return ResponseEntity.ok(responseObject);
 	}
 }

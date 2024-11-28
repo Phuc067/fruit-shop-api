@@ -18,6 +18,7 @@ import com.fruitshop.entity.User;
 import com.fruitshop.mapper.UserMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CartDetailRepository;
+import com.fruitshop.repository.RefreshTokenRepository;
 import com.fruitshop.repository.UserRepository;
 import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.JwtService;
@@ -35,6 +36,9 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 	@Autowired
 	private RefreshTokenService refreshTokenService;
 	
+	@Autowired
+	private RefreshTokenRepository refreshTokenRepository;
+
 	@Autowired
 	private JwtService jwtService;
 
@@ -55,6 +59,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		
 		RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
 		
+		refreshTokenRepository.save(refreshToken);
 		String jwtToken = "Bearer " + jwtService.generateToken(login);
 		
 		User user = userRepository.findByLogin(login);

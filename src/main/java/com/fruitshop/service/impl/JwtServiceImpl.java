@@ -32,6 +32,15 @@ public class JwtServiceImpl implements JwtService {
 		return extractClaims(token, Claims::getSubject);
 	}
 	
+	public String extractRole(String token) {
+	    return extractClaims(token, claims -> claims.get("role", String.class));
+	}
+	
+	public boolean hasRole(String token, String requiredRole) {
+	    String role = extractRole(token);
+	    return role.equals(requiredRole);
+	}
+	
 	private Claims extractAllClaims(String token)
 	{
 		return Jwts
@@ -53,17 +62,24 @@ public class JwtServiceImpl implements JwtService {
 		return claimsResolver.apply(claims);
 		
 	}
-
 	@Override
 	public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-		return Jwts
-				.builder()	
-				.setSubject(userDetails.getUsername())
-				.setIssuedAt(new Date(System.currentTimeMillis()))
-				.setExpiration(new Date(System.currentTimeMillis() +  SessionConstant.JWT_EXPIRED_TIME))
-				.signWith(getSignInKey(), SignatureAlgorithm.HS256)
-				.compact();
+	    Map<String, Object> claims = new HashMap<>(extraClaims);
+	    claims.put("role", userDetails.getAuthorities().stream()
+	                .map(grantedAuthority -> grantedAuthority.getAuthority())
+	                .findFirst()
+	                .orElse("CUSTOMER")); 
+
+	    return Jwts
+	            .builder()
+	            .setClaims(claims)
+	            .setSubject(userDetails.getUsername()) 
+	            .setIssuedAt(new Date(System.currentTimeMillis())) 
+	            .setExpiration(new Date(System.currentTimeMillis() + SessionConstant.JWT_EXPIRED_TIME)) 
+	            .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+	            .compact();
 	}
+
 
 	@Override
 	public String generateToken(UserDetails userDetails) {

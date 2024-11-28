@@ -1,15 +1,17 @@
 package com.fruitshop.constant;
 
+import org.springframework.http.HttpStatus;
+
+import com.fruitshop.exception.CustomException;
+
 public enum OrderStatus {
 	PENDING("Pending"), 
-	AWAITING_PAYMENT("Awaiting Payment"),
-	CONFIRMED("Confirmed"), 
-	PACKING("Packing"), 
-	SHIPPED("Shipped"), 
+	AWAITING_PAYMENT("AwaitingPayment"),
+	SHIPPING("Shipping"), 
 	DELIVERED("Delivered"),
-	CANCELED("Canceled"), 
-	RETURNED("Returned"), 
-	REFUNDED("Refunded");
+	CANCELED("Cancelled");
+//	RETURNED("Returned"), 
+//	REFUNDED("Refunded");
 
 	private final String displayName;
 
@@ -23,7 +25,7 @@ public enum OrderStatus {
 	            return status;
 	        }
 	    }
-	    throw new IllegalArgumentException("No enum constant with: " + displayName);
+	    throw new CustomException( HttpStatus.NOT_FOUND,"No enum constant with: " + displayName);
 	}
 
 
