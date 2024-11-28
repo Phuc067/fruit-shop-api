@@ -11,4 +11,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer>{
 	
 	@Query(value = "CALL sp_get_discount_of_product(:id)", nativeQuery = true)
 	int getProductDiscount(@Param("id") Integer id);
+
+	Boolean existsByTitle(String title);
 }

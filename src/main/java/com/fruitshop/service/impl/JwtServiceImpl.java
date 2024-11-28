@@ -32,13 +32,11 @@ public class JwtServiceImpl implements JwtService {
 		return extractClaims(token, Claims::getSubject);
 	}
 	
+	@Override
 	public String extractRole(String token) {
-	    return extractClaims(token, claims -> claims.get("role", String.class));
-	}
-	
-	public boolean hasRole(String token, String requiredRole) {
-	    String role = extractRole(token);
-	    return role.equals(requiredRole);
+		String role = extractClaims(token, claims -> (String) claims.get("role"));
+		System.out.println("Extracted role: " + role);
+		return role;
 	}
 	
 	private Claims extractAllClaims(String token)
@@ -65,11 +63,11 @@ public class JwtServiceImpl implements JwtService {
 	@Override
 	public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
 	    Map<String, Object> claims = new HashMap<>(extraClaims);
-	    claims.put("role", userDetails.getAuthorities().stream()
+	    claims.put("role", "ROLE_" + userDetails.getAuthorities().stream()
 	                .map(grantedAuthority -> grantedAuthority.getAuthority())
 	                .findFirst()
 	                .orElse("CUSTOMER")); 
-
+	    
 	    return Jwts
 	            .builder()
 	            .setClaims(claims)

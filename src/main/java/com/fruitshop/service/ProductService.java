@@ -1,11 +1,10 @@
 package com.fruitshop.service;
 
-import java.util.List;
-
-import com.fruitshop.dto.response.ProductResponse;
-import com.fruitshop.entity.Product;
+import com.fruitshop.dto.request.ProductRequest;
 import com.fruitshop.model.ResponseObject;
 
 public interface ProductService {
 	ResponseObject getAll();
+
+	ResponseObject createProduct(ProductRequest request);
 }
