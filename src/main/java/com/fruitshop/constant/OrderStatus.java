@@ -7,6 +7,7 @@ import com.fruitshop.exception.CustomException;
 public enum OrderStatus {
 	PENDING("Pending"), 
 	AWAITING_PAYMENT("AwaitingPayment"),
+	PREPARING("Preparing"),
 	SHIPPING("Shipping"), 
 	DELIVERED("Delivered"),
 	CANCELED("Cancelled");

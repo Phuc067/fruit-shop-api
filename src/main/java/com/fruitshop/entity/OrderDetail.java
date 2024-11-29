@@ -45,4 +45,5 @@ public class OrderDetail implements Serializable{
 	
 	private int Quantity;
 	private Double price;
+	private Double salePrice;
 }

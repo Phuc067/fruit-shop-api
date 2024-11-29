@@ -14,6 +14,8 @@ import com.fruitshop.dto.request.ProductRequest;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.service.ProductService;
 
+import jakarta.annotation.security.RolesAllowed;
+
 
 @RestController
 @RequestMapping(ApiPath.PRODUCT)
@@ -29,6 +31,7 @@ public class ProductController {
 		return ResponseEntity.ok(responseObject); 
 	}
 	
+	@RolesAllowed("ROLE_ADMIN")
 	@PostMapping("")
 	public ResponseEntity<ResponseObject> createPorduct(@RequestBody ProductRequest request){
 		ResponseObject responseObject = productService.createProduct(request);

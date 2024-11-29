@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -135,9 +139,10 @@ public class OrderServiceImpl implements OrderService {
 		if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
 			throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
 
-		System.out.println(state + " "+ state == "");
+		System.out.println(state + " " + state == "");
 
-		List<Order> orders = state.equals("") ? orderRepository.findByUserId(userId) : orderRepository.findByUserIdAndState(userId, OrderStatus.fromDisplayName(state));
+		List<Order> orders = state.equals("") ? orderRepository.findByUserId(userId)
+				: orderRepository.findByUserIdAndState(userId, OrderStatus.fromDisplayName(state));
 
 		List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orders);
 
@@ -147,6 +152,30 @@ public class OrderServiceImpl implements OrderService {
 		}
 
 		return new ResponseObject(HttpStatus.OK, "Lấy danh sách đơn hàng thành công", orderReponses);
+	}
+
+	@Override
+	public ResponseObject getAllOrder(Optional<Integer> pageNumber, Optional<Integer> amount, String state) {
+
+		try {
+			Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
+			System.out.println(amount);
+			Page<Order> orderPage = orderRepository.findByState(OrderStatus.fromDisplayName(state) ,pageable);
+			
+			List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orderPage.getContent());
+
+			for (OrderReponse orderReponse : orderReponses) {
+			    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
+			    orderReponse.setOrderDetails(orderDetails);
+			}
+
+			Page<OrderReponse> orderReponsePage = new PageImpl<>(orderReponses, pageable, orderPage.getTotalElements());
+
+			return new ResponseObject(HttpStatus.OK, "Lấy danh sách đơn hàng thành công.", orderReponsePage);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseObject(HttpStatus.INTERNAL_SERVER_ERROR, "Lấy danh sách đơn hàng thất bại.", null);
+		}
 	}
 
 }
