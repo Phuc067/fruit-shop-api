@@ -9,4 +9,5 @@ public interface OrderService {
 	ResponseObject createOrder(OrderRequest request);
 	ResponseObject getListOrderByUserIdAndState(Integer userId, String state);
 	ResponseObject getAllOrder(Optional<Integer> pageNumber, Optional<Integer> among, String state);
+	ResponseObject updateStatus(String id);
 }

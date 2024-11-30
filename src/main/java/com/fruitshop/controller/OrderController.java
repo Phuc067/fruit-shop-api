@@ -6,7 +6,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -46,6 +48,13 @@ public class OrderController {
 													@RequestParam("page") Optional<Integer> pageNumber, 
 													@RequestParam("amount") Optional<Integer> amount){
 		ResponseObject responseObject = orderService.getAllOrder(pageNumber, amount, state);
+		return ResponseEntity.ok(responseObject);
+	}
+	
+	@PutMapping("/{id}")
+	ResponseEntity<ResponseObject> updateOrderStatus(@PathVariable("id") String id)
+	{
+		ResponseObject responseObject = orderService.updateStatus(id);
 		return ResponseEntity.ok(responseObject);
 	}
 }

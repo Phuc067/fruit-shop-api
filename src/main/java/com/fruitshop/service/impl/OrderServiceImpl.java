@@ -1,6 +1,7 @@
 package com.fruitshop.service.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -160,7 +161,8 @@ public class OrderServiceImpl implements OrderService {
 		try {
 			Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
 			System.out.println(amount);
-			Page<Order> orderPage = orderRepository.findByState(OrderStatus.fromDisplayName(state) ,pageable);
+			List<OrderStatus> states = OrderStatus.parseStates(state);
+			Page<Order> orderPage = orderRepository.findByState(states ,pageable);
 			
 			List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orderPage.getContent());
 
@@ -176,6 +178,25 @@ public class OrderServiceImpl implements OrderService {
 			e.printStackTrace();
 			return new ResponseObject(HttpStatus.INTERNAL_SERVER_ERROR, "Lấy danh sách đơn hàng thất bại.", null);
 		}
+	}
+
+	@Override
+	public ResponseObject updateStatus(String id) {
+		Optional<Order> orderDB = orderRepository.findById(id);
+		if(orderDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+		
+		Order order = orderDB.get();
+		
+		
+		OrderStatus orderStatus = order.getState();
+		if(orderStatus.requiresAdminAccess() && !AuthenticationUtils.isAdminAccess())
+			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
+		else if(AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
+			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
+		OrderStatus nextStatus = orderStatus.getNextStatus();
+		order.setState(nextStatus);
+		orderRepository.save(order);
+		return new ResponseObject(HttpStatus.ACCEPTED, "Cập nhật trạng thái đơn hàng thành công", nextStatus.getDisplayName());
 	}
 
 }
