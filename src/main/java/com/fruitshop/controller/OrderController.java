@@ -51,10 +51,16 @@ public class OrderController {
 		return ResponseEntity.ok(responseObject);
 	}
 	
-	@PutMapping("/{id}")
-	ResponseEntity<ResponseObject> updateOrderStatus(@PathVariable("id") String id)
+	@PutMapping("/{orderId}")
+	ResponseEntity<ResponseObject> updateOrderStatus(@PathVariable("orderId") String id)
 	{
 		ResponseObject responseObject = orderService.updateStatus(id);
+		return ResponseEntity.ok(responseObject);
+	}
+	
+	@PutMapping("/{orderId}/cancel")
+	ResponseEntity<ResponseObject> cancelOrder(@PathVariable("orderId") String orderId){
+		ResponseObject responseObject = orderService.cancelOrder(orderId);
 		return ResponseEntity.ok(responseObject);
 	}
 }

@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import com.fruitshop.entity.OrderDetail;
+import com.fruitshop.entity.OrderLog;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class OrderReponse {
 	private String phoneNumber;
 	private String paymentMethod;
 	private List<OrderDetail> orderDetails; 
+	private OrderLog orderLog;
 }

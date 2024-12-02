@@ -1,5 +1,6 @@
 package com.fruitshop.service.impl;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,6 +22,7 @@ import com.fruitshop.dto.response.OrderReponse;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Order;
 import com.fruitshop.entity.OrderDetail;
+import com.fruitshop.entity.OrderLog;
 import com.fruitshop.entity.Product;
 import com.fruitshop.entity.ShippingInformation;
 import com.fruitshop.entity.User;
@@ -29,6 +31,7 @@ import com.fruitshop.mapper.OrderMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CartDetailRepository;
 import com.fruitshop.repository.OrderDetailRepository;
+import com.fruitshop.repository.OrderLogRepository;
 import com.fruitshop.repository.OrderRepository;
 import com.fruitshop.repository.ProductRepository;
 import com.fruitshop.repository.ShippingInformationRepository;
@@ -59,6 +62,9 @@ public class OrderServiceImpl implements OrderService {
 	@Autowired
 	private OrderDetailRepository orderDetailRepository;
 
+	@Autowired
+	private OrderLogRepository orderLogRepository;
+
 	@Override
 	@Transactional
 	public ResponseObject createOrder(OrderRequest request) {
@@ -80,10 +86,11 @@ public class OrderServiceImpl implements OrderService {
 
 		ShippingInformation shippingInfo = shippingInfoDB.get();
 
-		Order order = Order.builder().id(RandomUtils.getUniqueId()).orderDate(TimeUtils.getInstantNow())
-				.state(request.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName())
-						? OrderStatus.AWAITING_PAYMENT
-						: OrderStatus.PENDING)
+		OrderStatus orderStatus = request.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName())
+				? OrderStatus.AWAITING_PAYMENT
+				: OrderStatus.PENDING;
+		Instant orderTime = TimeUtils.getInstantNow();
+		Order order = Order.builder().id(RandomUtils.getUniqueId()).orderDate(orderTime).state(orderStatus)
 				.recipientName(shippingInfo.getRecipientName()).recipientAddress(shippingInfo.getShippingAdress())
 				.phoneNumber(shippingInfo.getPhone()).paymentMethod(request.getPaymentMethod()).user(user).build();
 
@@ -127,6 +134,9 @@ public class OrderServiceImpl implements OrderService {
 
 		orderDetailRepository.saveAll(orderDetails);
 
+		OrderLog orderLog = OrderLog.builder().order(order).PerformedBy(user.getLogin().getUsername()).time(orderTime)
+				.log(orderStatus.getLogMessage()).build();
+		orderLogRepository.save(orderLog);
 		return new ResponseObject(HttpStatus.ACCEPTED, "Tạo đơn hàng thành công", order);
 	}
 
@@ -150,6 +160,8 @@ public class OrderServiceImpl implements OrderService {
 		for (OrderReponse orderReponse : orderReponses) {
 			List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
 			orderReponse.setOrderDetails(orderDetails);
+			OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(), OrderStatus.fromDisplayName(orderReponse.getState()));
+			orderReponse.setOrderLog(lastOrderLog);
 		}
 
 		return new ResponseObject(HttpStatus.OK, "Lấy danh sách đơn hàng thành công", orderReponses);
@@ -162,13 +174,15 @@ public class OrderServiceImpl implements OrderService {
 			Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
 			System.out.println(amount);
 			List<OrderStatus> states = OrderStatus.parseStates(state);
-			Page<Order> orderPage = orderRepository.findByState(states ,pageable);
-			
+			Page<Order> orderPage = orderRepository.findByState(states, pageable);
+
 			List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orderPage.getContent());
 
 			for (OrderReponse orderReponse : orderReponses) {
-			    List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
-			    orderReponse.setOrderDetails(orderDetails);
+				List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
+				orderReponse.setOrderDetails(orderDetails);
+				OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(), OrderStatus.fromDisplayName(orderReponse.getState()));
+				orderReponse.setOrderLog(lastOrderLog);
 			}
 
 			Page<OrderReponse> orderReponsePage = new PageImpl<>(orderReponses, pageable, orderPage.getTotalElements());
@@ -181,22 +195,65 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
+	@Transactional
 	public ResponseObject updateStatus(String id) {
 		Optional<Order> orderDB = orderRepository.findById(id);
-		if(orderDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
-		
+		if (orderDB.isEmpty())
+			return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+
 		Order order = orderDB.get();
-		
-		
+
 		OrderStatus orderStatus = order.getState();
-		if(orderStatus.requiresAdminAccess() && !AuthenticationUtils.isAdminAccess())
+
+		Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
+
+		if (orderStatus.requiresAdminAccess() && !isAdminAccess)
 			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
-		else if(AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
+		else if (AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
 			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
 		OrderStatus nextStatus = orderStatus.getNextStatus();
 		order.setState(nextStatus);
 		orderRepository.save(order);
-		return new ResponseObject(HttpStatus.ACCEPTED, "Cập nhật trạng thái đơn hàng thành công", nextStatus.getDisplayName());
+
+		Instant now = TimeUtils.getInstantNow();
+
+		OrderLog orderLog = OrderLog.builder().order(order)
+				.PerformedBy(isAdminAccess ? "admin" : order.getUser().getLogin().getUsername()).time(now)
+				.log(nextStatus.getLogMessage()).build();
+		orderLogRepository.save(orderLog);
+		return new ResponseObject(HttpStatus.ACCEPTED, "Cập nhật trạng thái đơn hàng thành công",
+				nextStatus.getDisplayName());
+	}
+
+	@Override
+	@Transactional
+	public ResponseObject cancelOrder(String orderId) {
+		Optional<Order> orderDB = orderRepository.findById(orderId);
+		if (orderDB.isEmpty())
+			return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+
+		Order order = orderDB.get();
+
+		Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
+
+		if (!isAdminAccess && AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
+			return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
+		OrderStatus orderStatus = order.getState();
+
+		if (!orderStatus.allowCancel())
+			return new ResponseObject(HttpStatus.BAD_REQUEST, "Đơn hàng không thể hủy được nữa", null);
+
+		OrderStatus nextStatus = OrderStatus.CANCELED;
+		order.setState(nextStatus);
+		orderRepository.save(order);
+
+		Instant now = TimeUtils.getInstantNow();
+
+		OrderLog orderLog = OrderLog.builder().order(order)
+				.PerformedBy(isAdminAccess ? "admin" : order.getUser().getLogin().getUsername()).time(now)
+				.log(nextStatus.getLogMessage()).build();
+		orderLogRepository.save(orderLog);
+		return new ResponseObject(HttpStatus.ACCEPTED, "Hủy đơn hàng thành công", nextStatus.getDisplayName());
 	}
 
 }

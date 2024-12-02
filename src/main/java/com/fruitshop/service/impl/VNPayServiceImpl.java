@@ -102,6 +102,8 @@ public class VNPayServiceImpl implements VNPayService {
 		String paymentUrl = VNPAYConfig.vnp_PayUrl + "?" + VNPAYConfig.hashAllField(vnp_Params);
 		return new ResponseObject(HttpStatus.OK, "Lấy url thanh toán thành công", paymentUrl);
 	}
+	
+
 
 	@Override
 	@Transactional
@@ -129,6 +131,13 @@ public class VNPayServiceImpl implements VNPayService {
 			String errorMessage = VNPayreturnCode.getMessage(transaction.getVnp_ResponseCode());
 			return new ResponseObject(HttpStatus.ACCEPTED, errorMessage, null);
 		}
+	}
+
+
+
+	@Override
+	public ResponseObject refund(HttpServletRequest request, String orderId) {
 		
+		return null;
 	}
 }

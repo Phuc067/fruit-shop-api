@@ -9,6 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface VNPayService {
 	ResponseObject createPaymentURL(HttpServletRequest request,String orderId) throws UnsupportedEncodingException;
-
+	ResponseObject refund(HttpServletRequest request,String orderId);
 	ResponseObject addTransaction(Transaction transaction);
 }
