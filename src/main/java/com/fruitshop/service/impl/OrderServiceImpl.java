@@ -54,7 +54,7 @@ public class OrderServiceImpl implements OrderService {
 	private CartDetailRepository cartDetailRepository;
 
 	@Autowired
-	private UserRepository usererRepository;
+	private UserRepository userRepository;
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -76,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
 			throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ này");
 		}
 
-		Optional<User> userDB = usererRepository.findById(request.getUserId());
+		Optional<User> userDB = userRepository.findById(request.getUserId());
 		if (userDB.isEmpty())
 			throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin người dùng");
 		User user = userDB.get();
@@ -141,47 +141,38 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public ResponseObject getListOrderByUserIdAndState(Integer userId, String state) {
-		Optional<User> userDB = usererRepository.findById(userId);
-		if (userDB.isEmpty())
-			return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng", null);
-		User user = userDB.get();
-
-		if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
-			throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
-
-		System.out.println(state + " " + state == "");
-
-		List<Order> orders = state.equals("") ? orderRepository.findByUserId(userId)
-				: orderRepository.findByUserIdAndState(userId, OrderStatus.fromDisplayName(state));
-
-		List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orders);
-
-		for (OrderReponse orderReponse : orderReponses) {
-			List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
-			orderReponse.setOrderDetails(orderDetails);
-			OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(), OrderStatus.fromDisplayName(orderReponse.getState()));
-			orderReponse.setOrderLog(lastOrderLog);
-		}
-
-		return new ResponseObject(HttpStatus.OK, "Lấy danh sách đơn hàng thành công", orderReponses);
-	}
-
-	@Override
-	public ResponseObject getAllOrder(Optional<Integer> pageNumber, Optional<Integer> amount, String state) {
+	public ResponseObject getPageOrder(Integer userId, Optional<Integer> pageNumber, Optional<Integer> amount,
+			String state) {
 
 		try {
 			Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
-			System.out.println(amount);
-			List<OrderStatus> states = OrderStatus.parseStates(state);
-			Page<Order> orderPage = orderRepository.findByState(states, pageable);
+			List<OrderStatus> states = new ArrayList<OrderStatus>();
+			if (!state.equals("")) {
+				 states = OrderStatus.parseStates(state);
+			}
+			Page<Order> orderPage;
+			Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
+			if (isAdminAccess) {
+				orderPage = orderRepository.findByState(states, pageable);
+			} else {
 
+				Optional<User> userDB = userRepository.findById(userId);
+				if (userDB.isEmpty())
+					return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng", null);
+				User user = userDB.get();
+
+				if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
+					throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
+				orderPage = state.equals("") ? orderRepository.findByUserId(userId, pageable)
+						: orderRepository.findByUserIdAndState(userId, states, pageable);
+			}
 			List<OrderReponse> orderReponses = OrderMapper.INSTANCE.entitysToResponses(orderPage.getContent());
 
 			for (OrderReponse orderReponse : orderReponses) {
 				List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
 				orderReponse.setOrderDetails(orderDetails);
-				OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(), OrderStatus.fromDisplayName(orderReponse.getState()));
+				OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(),
+						OrderStatus.fromDisplayName(orderReponse.getState()));
 				orderReponse.setOrderLog(lastOrderLog);
 			}
 

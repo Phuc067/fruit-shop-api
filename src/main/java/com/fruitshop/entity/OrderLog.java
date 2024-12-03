@@ -2,6 +2,7 @@ package com.fruitshop.entity;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fruitshop.constant.OrderStatus;
 
 import jakarta.persistence.Entity;
@@ -36,6 +37,7 @@ public class OrderLog {
 	private String PerformedBy;
 	private String log;
 	
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "order_id", referencedColumnName = "id")
 	private Order order;

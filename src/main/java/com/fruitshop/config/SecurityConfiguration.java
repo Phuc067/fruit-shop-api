@@ -40,7 +40,6 @@ public class SecurityConfiguration {
 							ApiPath.REFRESH_TOKEN,
 							ApiPath.PUBLIC + "**").permitAll()
 			.requestMatchers(HttpMethod.POST, ApiPath.PRODUCT).hasRole("ADMIN")
-			.requestMatchers(HttpMethod.GET, ApiPath.ORDER+ "/all").hasRole("ADMIN")
 			.anyRequest().authenticated()
 				.and()
 			.sessionManagement()

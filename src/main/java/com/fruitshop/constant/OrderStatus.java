@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import com.fruitshop.exception.CustomException;
 
 public enum OrderStatus {
-    PENDING("pending", "Đơn hàng đang chờ được xác nhận"), 
+    PENDING("pending", "Đơn hàng đã được đặt thành công"), 
     AWAITING_PAYMENT("awaitingPayment", "Đơn hàng đang chờ được thanh toán"),
     PREPARING("preparing", "Đơn hàng đang được chuẩn bị"),
     SHIPPING("shipping", "Đơn hàng đang được vận chuyển"), 

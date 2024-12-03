@@ -31,9 +31,8 @@ public class ProductController {
 		return ResponseEntity.ok(responseObject); 
 	}
 	
-	@RolesAllowed("ROLE_ADMIN")
 	@PostMapping("")
-	public ResponseEntity<ResponseObject> createPorduct(@RequestBody ProductRequest request){
+	public ResponseEntity<ResponseObject> createProduct(@RequestBody ProductRequest request){
 		ResponseObject responseObject = productService.createProduct(request);
 		return ResponseEntity.ok(responseObject); 
 	}

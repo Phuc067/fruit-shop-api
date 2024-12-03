@@ -1,5 +1,6 @@
 package com.fruitshop;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import com.fruitshop.entity.OrderLog;
 import com.fruitshop.repository.OrderLogRepository;
 import com.fruitshop.repository.OrderRepository;
 import com.fruitshop.utils.RandomUtils;
+import com.fruitshop.utils.TimeUtils;
 
 import jakarta.annotation.PostConstruct;
 
@@ -27,13 +29,7 @@ public class FruitshopApplication {
 
 	@PostConstruct
 	public void run() {
-//		List<Order> orders = orderRepository.findAll();
-//
-//		for (Order order : orders) {
-//			OrderStatus state = order.getState();
-//			OrderLog orderLog =  OrderLog.builder().state(state).log(state.getLogMessage())
-//					.PerformedBy(order.getUser().getLogin().getUsername()).time(order.getOrderDate()).order(order).build();
-//			orderLogRepository.save(orderLog);
-//		}
+		Instant orderTime = TimeUtils.getInstantNow();
+		System.out.println(orderTime);
 	}
 }

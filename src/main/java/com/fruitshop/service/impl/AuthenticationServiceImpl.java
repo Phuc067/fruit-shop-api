@@ -53,6 +53,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 		Login login = (Login) authentication.getPrincipal();
+		
 		if (ObjectUtils.isNotEmpty(login) && !login.getState()) {
 			return new ResponseObject(HttpStatus.UNAUTHORIZED,"Tài khoản chưa được xác thực, xin vui lòng xác thực tài khoản.", null);
 		}

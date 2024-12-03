@@ -7,8 +7,7 @@ import com.fruitshop.model.ResponseObject;
 
 public interface OrderService {
 	ResponseObject createOrder(OrderRequest request);
-	ResponseObject getListOrderByUserIdAndState(Integer userId, String state);
-	ResponseObject getAllOrder(Optional<Integer> pageNumber, Optional<Integer> among, String state);
+	ResponseObject getPageOrder(Integer userId, Optional<Integer> pageNumber, Optional<Integer> among, String state);
 	ResponseObject updateStatus(String id);
 	ResponseObject cancelOrder(String orderId);
 }
