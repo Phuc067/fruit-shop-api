@@ -19,6 +19,7 @@ import com.fruitshop.constant.OrderStatus;
 import com.fruitshop.constant.PaymentMethod;
 import com.fruitshop.dto.request.OrderRequest;
 import com.fruitshop.dto.response.OrderReponse;
+import com.fruitshop.dto.response.ProductDiscount;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Order;
 import com.fruitshop.entity.OrderDetail;
@@ -117,8 +118,9 @@ public class OrderServiceImpl implements OrderService {
 				throw new CustomException(HttpStatus.FORBIDDEN,
 						"Sản phẩm " + product.getTitle() + " Không còn đủ số lượng");
 
-			Integer discountPercentage = productRepository.getProductDiscount(product.getId());
-			Double price = product.getPrice() * (1 - discountPercentage / 100);
+			ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
+			
+			Double price = product.getPrice() * (1 - productDiscount.getValue() / 100);
 
 			OrderDetail orderDetail = OrderDetail.builder().Quantity(cartDetail.getQuantity()).price(price).order(order)
 					.product(product).build();

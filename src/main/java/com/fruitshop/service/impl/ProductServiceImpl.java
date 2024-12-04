@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.fruitshop.constant.OrderStatus;
 import com.fruitshop.dto.request.ProductRequest;
+import com.fruitshop.dto.response.ProductDiscount;
 import com.fruitshop.dto.response.ProductResponse;
 import com.fruitshop.entity.Category;
 import com.fruitshop.entity.Order;
@@ -40,8 +41,9 @@ public class ProductServiceImpl implements ProductService {
 		List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
 		for (Product product : products) {
 			ProductResponse productResponse = ProductMapper.INSTANT.entityToResponse(product);
-			int discountPercentage = productRepository.getProductDiscount(product.getId());
-			productResponse.setDiscountPercentage(discountPercentage);
+			ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
+			productResponse.setDiscountPercentage(productDiscount.getValue());
+			productResponse.setDiscountExpired(productDiscount.getExpiredDate());
 			productResponses.add(productResponse);
 		}
 		return new ResponseObject(HttpStatus.ACCEPTED, "Lấy danh sách sản phẩm thành công", productResponses);
@@ -69,8 +71,9 @@ public class ProductServiceImpl implements ProductService {
 		List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
 		for (Product product : products) {
 			ProductResponse productResponse = ProductMapper.INSTANT.entityToResponse(product);
-			int discountPercentage = productRepository.getProductDiscount(product.getId());
-			productResponse.setDiscountPercentage(discountPercentage);
+			ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
+			productResponse.setDiscountPercentage(productDiscount.getValue());
+			productResponse.setDiscountExpired(productDiscount.getExpiredDate());
 			productResponses.add(productResponse);
 		}
 		Page<ProductResponse> productResponsePage = new PageImpl<>(productResponses, pageable,

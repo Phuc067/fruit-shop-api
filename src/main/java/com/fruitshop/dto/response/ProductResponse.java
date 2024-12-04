@@ -1,5 +1,7 @@
 package com.fruitshop.dto.response;
 
+import java.time.Instant;
+
 import com.fruitshop.entity.Category;
 
 import lombok.AllArgsConstructor;
@@ -19,6 +21,7 @@ public class ProductResponse {
 	private String origin;
 	private Double price;
 	private int discountPercentage;
+	private Instant discountExpired;
 	private Integer quantity;
 	private String image;
 	private Category category;

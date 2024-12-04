@@ -16,6 +16,7 @@ import com.fruitshop.dto.request.CartRequest;
 import com.fruitshop.dto.request.IntegerObject;
 import com.fruitshop.dto.request.ListInteger;
 import com.fruitshop.dto.response.CartResponse;
+import com.fruitshop.dto.response.ProductDiscount;
 import com.fruitshop.entity.CartDetail;
 import com.fruitshop.entity.Product;
 import com.fruitshop.entity.User;
@@ -79,8 +80,8 @@ public class CartServiceImpl implements CartService{
 		List<CartResponse> cartResponses = new ArrayList<CartResponse>();
 		for(CartDetail cartDetail: cartDetails) {
 			CartResponse cartResponse = CartMapper.INSTANT.toCartResponse(cartDetail);
-			int discountPercentage = productRepository.getProductDiscount(cartDetail.getProduct().getId());
-			cartResponse.getProduct().setDiscountPercentage(discountPercentage);
+			ProductDiscount productDiscount= productRepository.getProductDiscount(cartDetail.getProduct().getId());
+			cartResponse.getProduct().setDiscountPercentage(productDiscount.getValue());
 			cartResponses.add(cartResponse);
 		}
 		return new ResponseObject(HttpStatus.OK, "Lấy thông tin giỏ hàng thành công", cartResponses);
