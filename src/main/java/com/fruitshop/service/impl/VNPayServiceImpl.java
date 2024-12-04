@@ -18,16 +18,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fruitshop.config.VNPAYConfig;
+import com.fruitshop.constant.OrderStatus;
 import com.fruitshop.constant.PaymentMethod;
 import com.fruitshop.constant.VNPayreturnCode;
 import com.fruitshop.entity.Invoice;
 import com.fruitshop.entity.Order;
 import com.fruitshop.entity.OrderDetail;
+import com.fruitshop.entity.OrderLog;
 import com.fruitshop.entity.Transaction;
 import com.fruitshop.exception.CustomException;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.InvoiceRepository;
 import com.fruitshop.repository.OrderDetailRepository;
+import com.fruitshop.repository.OrderLogRepository;
 import com.fruitshop.repository.OrderRepository;
 import com.fruitshop.repository.TransactionRepository;
 import com.fruitshop.service.OrderService;
@@ -52,7 +55,10 @@ public class VNPayServiceImpl implements VNPayService {
 	@Autowired
 	private TransactionRepository transactionRepository;
 
+	@Autowired
+	private OrderService orderService;
 	@Override
+	@Transactional
 	public ResponseObject createPaymentURL(HttpServletRequest request, String orderId)
 			throws UnsupportedEncodingException {
 		String orderType = "other";
@@ -125,6 +131,7 @@ public class VNPayServiceImpl implements VNPayService {
 		{
 			Invoice invoice = Invoice.builder().date(now).totalAmount(transaction.getVnp_Amount()).order(order).build();
 			invoiceRepository.save(invoice);
+			orderService.UpdateOrderStateAndInsertLog(order,order.getState().getNextStatus(), now);
 			return new ResponseObject(HttpStatus.CREATED, "Đơn hàng của bạn đã được thanh toán thành công", null);
 		}
 		else {
@@ -132,8 +139,6 @@ public class VNPayServiceImpl implements VNPayService {
 			return new ResponseObject(HttpStatus.ACCEPTED, errorMessage, null);
 		}
 	}
-
-
 
 	@Override
 	public ResponseObject refund(HttpServletRequest request, String orderId) {

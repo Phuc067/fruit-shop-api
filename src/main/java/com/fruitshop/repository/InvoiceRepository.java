@@ -12,4 +12,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Integer>{
 
 	Invoice findByOrder(Order order);
 
+	Boolean existsByOrderId(String id);
+
 }

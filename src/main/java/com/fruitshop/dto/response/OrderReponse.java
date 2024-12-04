@@ -24,4 +24,5 @@ public class OrderReponse {
 	private String paymentMethod;
 	private List<OrderDetail> orderDetails; 
 	private OrderLog orderLog;
+	private Boolean isPaid ;
 }

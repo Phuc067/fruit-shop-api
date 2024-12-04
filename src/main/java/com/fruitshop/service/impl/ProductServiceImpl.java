@@ -78,7 +78,7 @@ public class ProductServiceImpl implements ProductService {
 		}
 		Page<ProductResponse> productResponsePage = new PageImpl<>(productResponses, pageable,
 				productPage.getTotalElements());
-		return new ResponseObject(HttpStatus.ACCEPTED, "Lấy danh sách sản phẩm thành công", productResponsePage);
+		return new ResponseObject(HttpStatus.OK, "Lấy danh sách sản phẩm thành công", productResponsePage);
 	}
 
 	@Override

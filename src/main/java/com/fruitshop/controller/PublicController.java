@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fruitshop.constant.ApiPath;
 import com.fruitshop.model.ResponseObject;
+import com.fruitshop.service.CategoryService;
 import com.fruitshop.service.ProductService;
 
 @RestController
@@ -19,6 +20,9 @@ public class PublicController {
 
 	@Autowired
 	private ProductService productService;
+	
+	@Autowired
+	private CategoryService categoryService;
 
 	@GetMapping("/products")
 	public ResponseEntity<ResponseObject> getPageProduct(@RequestParam("page") Optional<Integer> pageNumber,
@@ -26,6 +30,12 @@ public class PublicController {
 			@RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
 			@RequestParam(value = "sortType", required = false, defaultValue = "") String sortType) {
 		ResponseObject responseObject = productService.getPageProduct(pageNumber, amount, keyword, sortType);
+		return ResponseEntity.ok(responseObject);
+	}
+	
+	@GetMapping("/categories")
+	public ResponseEntity<ResponseObject> getAllCategory(){
+		ResponseObject responseObject = categoryService.getAll();
 		return ResponseEntity.ok(responseObject);
 	}
 
