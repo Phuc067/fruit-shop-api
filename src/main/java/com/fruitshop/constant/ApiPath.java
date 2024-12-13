@@ -14,4 +14,5 @@ public class ApiPath {
 	public static final String ORDER = BASE_URL+ "orders";
 	public static final String PAY = BASE_URL + "payments";
 	public static final String USER = BASE_URL+ "users";
+	public static final String REPORT = BASE_URL +"reports";
 }

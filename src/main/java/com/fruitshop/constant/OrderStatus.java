@@ -11,7 +11,7 @@ import com.fruitshop.exception.CustomException;
 public enum OrderStatus {
     PENDING("pending", "Đơn hàng đã được đặt thành công"), 
     AWAITING_PAYMENT("awaitingPayment", "Đơn hàng đang chờ được thanh toán"),
-    PREPARING("preparing", "Đơn hàng đang được chuẩn bị"),
+    PREPARING("preparing", "Đơn hàng đang được người bán chuẩn bị"),
     SHIPPING("shipping", "Đơn hàng đang được vận chuyển"), 
     DELIVERED("delivered", "Khách hàng đã nhận đơn hàng"),
     CANCELED("cancelled", "Đơn hàng đã được hủy"),
@@ -73,6 +73,9 @@ public enum OrderStatus {
     
     public boolean allowCancel() {
         return this == PENDING || this == AWAITING_PAYMENT || this == PREPARING;
+    }
+    public boolean isCanceledOrRefunded() {
+    	return this == CANCELED || this == REFUNDED;
     }
     
     public boolean requiresAdminAccess() {

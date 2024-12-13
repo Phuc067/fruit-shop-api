@@ -94,6 +94,7 @@ public class OrderServiceImpl implements OrderService {
 		OrderStatus orderStatus = request.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName())
 				? OrderStatus.AWAITING_PAYMENT
 				: OrderStatus.PENDING;
+		
 		Instant orderTime = TimeUtils.getInstantNow();
 		Order order = Order.builder().id(RandomUtils.getUniqueId()).orderDate(orderTime).state(orderStatus)
 				.recipientName(shippingInfo.getRecipientName()).recipientAddress(shippingInfo.getShippingAdress())
@@ -116,7 +117,9 @@ public class OrderServiceImpl implements OrderService {
 		List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
 
 		for (CartDetail cartDetail : cartDetails) {
-			Product product = cartDetail.getProduct();
+			
+			Product product = productRepository.findProductForUpdate(cartDetail.getProduct().getId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
 			if (product.getQuantity() < cartDetail.getQuantity())
 				throw new CustomException(HttpStatus.FORBIDDEN,
@@ -181,14 +184,18 @@ public class OrderServiceImpl implements OrderService {
 		if (!state.equals("")) {
 			states = OrderStatus.parseStates(state);
 		}
-		Optional<User> userDB = userRepository.findById(userId);
-		if (userDB.isEmpty())
-			throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng");
-		
+		Optional<User> userDB = Optional.empty();;
+		if(ObjectUtils.isNotEmpty(userId))
+		{
+			userDB = userRepository.findById(userId);
+			if (userDB.isEmpty())
+				throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng");
+		}
 		Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
 		if (isAdminAccess) {
-			if(ObjectUtils.isNotEmpty(userId) && state.equals("")) return orderRepository.findByUserId(userId, pageable);
+			System.out.println("userId: " + userId +",state: " + state);
 			if(ObjectUtils.isNotEmpty(userId) && !state.equals("")) return orderRepository.findByUserIdAndState(userId, states, pageable);
+			if(ObjectUtils.isNotEmpty(userId) && state.equals("")) return orderRepository.findByUserId(userId, pageable);
 			if(ObjectUtils.isEmpty(userId) && !state.equals("")) return orderRepository.findByState(states, pageable);
 			return orderRepository.findByState(states, pageable);
 		} else {

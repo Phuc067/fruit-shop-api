@@ -12,4 +12,6 @@ public interface ProductService {
 
 	ResponseObject getPageProduct(Optional<Integer> pageNumber, Optional<Integer> amount, String keyword, String sortType);
 
+	ResponseObject getProductByid(Integer id);
+
 }

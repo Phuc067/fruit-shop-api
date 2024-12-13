@@ -1,6 +1,7 @@
 package com.fruitshop;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,6 @@ public class FruitshopApplication {
 	@PostConstruct
 	public void run() {
 		Instant orderTime = TimeUtils.getInstantNow();
-		System.out.println(orderTime);
+		System.out.println(orderTime.atZone(ZoneOffset.UTC).toLocalDate());
 	}
 }

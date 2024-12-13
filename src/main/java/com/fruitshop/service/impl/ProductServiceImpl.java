@@ -19,6 +19,7 @@ import com.fruitshop.dto.response.ProductResponse;
 import com.fruitshop.entity.Category;
 import com.fruitshop.entity.Order;
 import com.fruitshop.entity.Product;
+import com.fruitshop.exception.CustomException;
 import com.fruitshop.mapper.ProductMapper;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.repository.CategoryRepository;
@@ -40,10 +41,7 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> products = productRepository.findAll();
 		List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
 		for (Product product : products) {
-			ProductResponse productResponse = ProductMapper.INSTANT.entityToResponse(product);
-			ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
-			productResponse.setDiscountPercentage(productDiscount.getValue());
-			productResponse.setDiscountExpired(productDiscount.getExpiredDate());
+			ProductResponse productResponse = getProductWithDiscount(product);
 			productResponses.add(productResponse);
 		}
 		return new ResponseObject(HttpStatus.ACCEPTED, "Lấy danh sách sản phẩm thành công", productResponses);
@@ -70,15 +68,21 @@ public class ProductServiceImpl implements ProductService {
 		List<Product> products = productPage.getContent();
 		List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
 		for (Product product : products) {
-			ProductResponse productResponse = ProductMapper.INSTANT.entityToResponse(product);
-			ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
-			productResponse.setDiscountPercentage(productDiscount.getValue());
-			productResponse.setDiscountExpired(productDiscount.getExpiredDate());
+			ProductResponse productResponse = getProductWithDiscount(product);
 			productResponses.add(productResponse);
 		}
 		Page<ProductResponse> productResponsePage = new PageImpl<>(productResponses, pageable,
 				productPage.getTotalElements());
 		return new ResponseObject(HttpStatus.OK, "Lấy danh sách sản phẩm thành công", productResponsePage);
+	}
+	
+	@Override
+	public ResponseObject getProductByid(Integer id) {
+		Optional<Product> productDB = productRepository.findById(id);
+		if(productDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
+		Product product = productDB.get();
+		ProductResponse productResponse = getProductWithDiscount(product);
+		return new ResponseObject(HttpStatus.OK, "Lấy thông tin sản phẩm thành công", productResponse);
 	}
 
 	@Override
@@ -124,4 +128,15 @@ public class ProductServiceImpl implements ProductService {
 		return 0;
 
 	}
+	
+	private ProductResponse getProductWithDiscount(Product product)
+	{
+		ProductResponse productResponse = ProductMapper.INSTANT.entityToResponse(product);
+		ProductDiscount productDiscount= productRepository.getProductDiscount(product.getId());
+		productResponse.setDiscountPercentage(productDiscount.getValue());
+		productResponse.setDiscountExpired(productDiscount.getExpiredDate());
+		return productResponse;
+	}
+
+	
 }

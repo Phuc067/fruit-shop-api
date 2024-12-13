@@ -129,7 +129,7 @@ public class VNPayServiceImpl implements VNPayService {
 		Instant now = TimeUtils.getInstantNow();
 		if(transaction.getVnp_ResponseCode().equals("00"))
 		{
-			Invoice invoice = Invoice.builder().date(now).totalAmount(transaction.getVnp_Amount()).order(order).build();
+			Invoice invoice = Invoice.builder().date(now).totalAmount(transaction.getVnp_Amount()/100).order(order).build();
 			invoiceRepository.save(invoice);
 			orderService.UpdateOrderStateAndInsertLog(order,order.getState().getNextStatus(), now);
 			return new ResponseObject(HttpStatus.CREATED, "Đơn hàng của bạn đã được thanh toán thành công", null);
