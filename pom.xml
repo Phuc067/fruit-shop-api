@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.fruitshop</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>fruit-shop</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>fruitshop</name>
 	<description>project for fruitshop</description>
@@ -54,6 +54,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<scope>runtime</scope>
+            <optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

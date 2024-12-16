@@ -1,13 +1,11 @@
 package com.fruitshop.controller;
 
+import com.fruitshop.dto.request.RegisterRequest;
+import com.fruitshop.dto.request.VerificationRequest;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fruitshop.constant.ApiPath;
 import com.fruitshop.dto.request.LoginRequest;
@@ -38,7 +36,27 @@ public class AuthenticationController {
 		ResponseObject responseObject =  refreshTokenService.genarateAccessToken(request.getRefreshToken());
 		return ResponseEntity.ok(responseObject);
 	}
-	
+
+  @PostMapping(ApiPath.REGISTER)
+  public  ResponseEntity<ResponseObject> register(@RequestBody RegisterRequest request) throws MessagingException {
+    ResponseObject responseObject = authenticationService.register(request);
+    return ResponseEntity.ok(responseObject);
+  }
+
+  @PostMapping(ApiPath.VERIFICATION)
+  public ResponseEntity<ResponseObject> verification(@RequestBody VerificationRequest request)
+  {
+    ResponseObject responseObject = authenticationService.verification(request);
+    return ResponseEntity.ok(responseObject);
+  }
+
+  @PutMapping(ApiPath.VERIFICATION)
+  public ResponseEntity<ResponseObject> getNewVerification(@RequestBody String username) throws MessagingException
+  {
+    ResponseObject responseObject = authenticationService.getNewVerification(username);
+    return ResponseEntity.ok(responseObject);
+  }
+
 //	@GetMapping(ApiPath.LOGOUT)
 //	public ResponseEntity<ResponseObject> logout(){
 //		System.out.println("ngu");

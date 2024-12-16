@@ -20,36 +20,36 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-	
-	@Autowired
-	private JwtAuthenticationFilter jwtAuthFilter;
-	
-	private final AuthenticationProvider authenticationProvider;
 
-    @SuppressWarnings("removal")
-    @Bean
-    SecurityFilterChain sFilterChain(HttpSecurity http) throws Exception
-	{
-		http
-			.cors()
-			.and()
-			.csrf()
-			.disable()
-			.authorizeHttpRequests()
-			.requestMatchers(ApiPath.LOGIN,
-							ApiPath.REFRESH_TOKEN,
-							ApiPath.PUBLIC + "**").permitAll()
-			.requestMatchers(HttpMethod.POST, ApiPath.PRODUCT).hasRole("ADMIN")
-			.requestMatchers(HttpMethod.PUT, ApiPath.PRODUCT).hasRole("ADMIN")
-			.requestMatchers(HttpMethod.DELETE, ApiPath.PRODUCT).hasRole("ADMIN")
-			.anyRequest().authenticated()
-				.and()
-			.sessionManagement()
-				.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-				.and()
-			.authenticationProvider(authenticationProvider)
-			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-		return http.build();
-	}
+  @Autowired
+  private JwtAuthenticationFilter jwtAuthFilter;
+
+  private final AuthenticationProvider authenticationProvider;
+
+  @SuppressWarnings("removal")
+  @Bean
+  SecurityFilterChain sFilterChain(HttpSecurity http) throws Exception {
+    http
+        .cors()
+        .and()
+        .csrf()
+        .disable()
+        .authorizeHttpRequests()
+        .requestMatchers(ApiPath.LOGIN,
+            ApiPath.REFRESH_TOKEN,
+            ApiPath.PUBLIC + "**").permitAll()
+        .requestMatchers(HttpMethod.POST, ApiPath.PRODUCT).hasRole("ADMIN")
+        .requestMatchers(HttpMethod.PUT, ApiPath.PRODUCT).hasRole("ADMIN")
+        .requestMatchers(HttpMethod.DELETE, ApiPath.PRODUCT).hasRole("ADMIN")
+        .requestMatchers(ApiPath.DISCOUNT).hasRole("ADMIN")
+        .anyRequest().authenticated()
+        .and()
+        .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .authenticationProvider(authenticationProvider)
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+    return http.build();
+  }
 }
 
