@@ -1,15 +1,12 @@
 package com.fruitshop.controller;
 
-import com.fruitshop.dto.request.RegisterRequest;
-import com.fruitshop.dto.request.VerificationRequest;
+import com.fruitshop.dto.request.*;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.fruitshop.constant.ApiPath;
-import com.fruitshop.dto.request.LoginRequest;
-import com.fruitshop.dto.request.RefreshTokenRequest;
 import com.fruitshop.model.ResponseObject;
 import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.RefreshTokenService;
@@ -57,10 +54,9 @@ public class AuthenticationController {
     return ResponseEntity.ok(responseObject);
   }
 
-//	@GetMapping(ApiPath.LOGOUT)
-//	public ResponseEntity<ResponseObject> logout(){
-//		System.out.println("ngu");
-//		ResponseObject responseObject = authenticationService.logOut();
-//		return ResponseEntity.ok(responseObject);
-//	}
+	@PostMapping(ApiPath.LOGOUT)
+	public ResponseEntity<ResponseObject> logout(@RequestBody LogoutRequest request){
+		ResponseObject responseObject = authenticationService.logOut(request);
+		return ResponseEntity.ok(responseObject);
+	}
 }

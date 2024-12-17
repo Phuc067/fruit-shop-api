@@ -22,7 +22,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
 MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-		helper.setFrom("Fruit shop");
+		helper.setFrom("Fruit-shop");
 		helper.setTo(toEmail);
 		helper.setSubject("Xác thực tài khoản Fruit Shop");
 
@@ -32,8 +32,8 @@ MimeMessage message = mailSender.createMimeMessage();
 				+ "    <p>Xin dùng mã này để xác thực cho tài khoản Fruit Shop " + username + " .</p>\r\n"
 				+ "    <p>Đây là mã của bạn: <strong> " + verificationCode + "</strong></p>\r\n"
 				+ "    <p>Nếu bạn không sử dụng liên kết này trong vòng " + time.toString()
-				+ ", nó sẽ hết hạn. Để nhận liên kết đặt lại mật khẩu mới, hãy\r\n" + "        truy cập: </p>\r\n"
-				+ "    <p>Xin cám ơn,</p>\r\n" + "    <p>Nhóm tài khoản Hat Shop</p>\r\n" + "</div>";
+				+ ", nó sẽ hết hạn. \r\n"
+				+ "    <p>Xin cám ơn,</p>\r\n" + "    <p>Nhóm tài khoản Fruit Shop</p>\r\n" + "</div>";
 
 		helper.setText(htmlBody, true);
 		mailSender.send(message);

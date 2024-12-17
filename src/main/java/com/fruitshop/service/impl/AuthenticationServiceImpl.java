@@ -1,11 +1,13 @@
 package com.fruitshop.service.impl;
 
 import com.fruitshop.constant.SessionConstant;
+import com.fruitshop.dto.request.LogoutRequest;
 import com.fruitshop.dto.request.RegisterRequest;
 import com.fruitshop.dto.request.VerificationRequest;
 import com.fruitshop.entity.Role;
 import com.fruitshop.repository.*;
 import com.fruitshop.service.EmailSenderService;
+import com.fruitshop.utils.TaskManager;
 import com.fruitshop.utils.VerificationCodeGenerator;
 import com.fruitshop.utils.VerifyCodeManager;
 import jakarta.mail.MessagingException;
@@ -29,6 +31,7 @@ import com.fruitshop.model.ResponseObject;
 import com.fruitshop.service.AuthenticationService;
 import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
@@ -81,12 +84,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
 
-    refreshTokenRepository.save(refreshToken);
     String jwtToken = "Bearer " + jwtService.generateToken(login);
 
     User user = userRepository.findByLogin(login);
     UserResponse userResponse = UserMapper.INSTANT.entityToResponse(user);
     userResponse.setUsername(loginRequest.getUsername());
+    userResponse.setEmail(login.getEmail());
     int cartItem = 0;
     if (ObjectUtils.isNotEmpty(user)) cartItem = cartDetailRepository.getCountProductByUserId(user.getId());
 
@@ -94,6 +97,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   }
 
   @Override
+  @Transactional
   public ResponseObject register(RegisterRequest registerDto) throws MessagingException {
 
     if (loginRepository.existsById(registerDto.getUsername())) {
@@ -108,7 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     Login login = Login.builder().email(registerDto.getEmail())
         .username(registerDto.getUsername())
         .password(hashPassword).state(false).build();
-    Optional<Role> role = roleRepository.findByName("USER");
+    Optional<Role> role = roleRepository.findByName("CUSTOMER");
     if (role.isPresent())
       login.setRole(role.get());
 
@@ -119,7 +123,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     VerifyCodeManager verifyCodeManager = new VerifyCodeManager();
     ScheduledFuture<?> scheduledFuture = verifyCodeManager.scheduleVerificationCleanup(SessionConstant.OTP_EXPIRE_TIME, login.getUsername(),
         loginRepository);
-
+    TaskManager.addTask("otp-" + login.getUsername(), scheduledFuture);
     User user = new User();
     user.setLogin(login);
     userRepository.save(user);
@@ -145,6 +149,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       login.setState(true);
       login.setOTP(null);
       loginRepository.save(login);
+      TaskManager.cancelTask("otp-" + verificationDto.getUsername());
       return new ResponseObject(HttpStatus.ACCEPTED, "Xác thực tài khoản thành công.", null);
     }
     return new ResponseObject(HttpStatus.BAD_REQUEST, "OTP không trùng khớp.", null);
@@ -168,6 +173,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     VerifyCodeManager verifyCodeManager = new VerifyCodeManager();
     ScheduledFuture<?> scheduledFuture = verifyCodeManager.scheduleVerificationCleanup(SessionConstant.OTP_EXPIRE_TIME, login.getUsername(),
         loginRepository);
+    TaskManager.addTask("otp-" + login.getUsername(), scheduledFuture);
     return new ResponseObject(HttpStatus.ACCEPTED, "Yêu cầu xác thực thành công", login.getEmail());
   }
+
+  @Override
+  @Transactional
+  public ResponseObject logOut(LogoutRequest request) {
+
+    jwtService.addTokenToBlacklist(request.getAccessToken());
+    refreshTokenRepository.deleteByToken(request.getRefreshToken());
+    return new ResponseObject(HttpStatus.ACCEPTED, "Đăng xuất thành công", null);
+  }
 }
+

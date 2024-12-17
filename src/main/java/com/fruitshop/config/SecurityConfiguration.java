@@ -36,7 +36,8 @@ public class SecurityConfiguration {
         .disable()
         .authorizeHttpRequests()
         .requestMatchers(ApiPath.LOGIN,
-            ApiPath.REFRESH_TOKEN,
+        		ApiPath.REGISTER,
+        		ApiPath.REFRESH_TOKEN,
             ApiPath.PUBLIC + "**").permitAll()
         .requestMatchers(HttpMethod.POST, ApiPath.PRODUCT).hasRole("ADMIN")
         .requestMatchers(HttpMethod.PUT, ApiPath.PRODUCT).hasRole("ADMIN")

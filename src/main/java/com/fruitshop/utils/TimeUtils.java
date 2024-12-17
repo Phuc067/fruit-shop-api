@@ -1,5 +1,6 @@
 package com.fruitshop.utils;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -29,4 +30,12 @@ public class TimeUtils {
 
 		return instant;
 	}
+
+   public static final Instant timeStampToInstant(Timestamp timestamp) {
+        if (timestamp == null) {
+            return null;
+        }
+        Instant instant = timestamp.toInstant();
+        return gmt_7(instant);
+    }
 }

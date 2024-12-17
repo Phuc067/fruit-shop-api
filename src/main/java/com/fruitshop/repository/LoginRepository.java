@@ -19,6 +19,6 @@ public interface LoginRepository extends JpaRepository<Login, String> {
   boolean existsByEmail(String email);
 
   @Modifying
-  @Query("UPDATE Login l SET l.otp = NULL WHERE l.username = :username")
+  @Query("UPDATE Login l SET l.OTP = NULL WHERE l.username = :username")
   void removeVerificationCode(@Param("username") String username);
 }

@@ -65,12 +65,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	        return;
 	    }
 
-	    if (requestURI.equals(ApiPath.LOGOUT)) {
-	        jwtService.addTokenToBlacklist(jwt);
-	        response.setStatus(HttpServletResponse.SC_OK);
-	        return;
-	    }
-
 	    try {
 	        if (jwtService.isTokenExpired(jwt)) {
 	            writeJsonResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "jwt expired");

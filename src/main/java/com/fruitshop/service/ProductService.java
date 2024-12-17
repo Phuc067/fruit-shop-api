@@ -3,6 +3,9 @@ package com.fruitshop.service;
 import java.util.Optional;
 
 import com.fruitshop.dto.request.ProductRequest;
+import com.fruitshop.dto.response.ProductDiscount;
+import com.fruitshop.dto.response.ProductResponse;
+import com.fruitshop.entity.Product;
 import com.fruitshop.model.ResponseObject;
 
 public interface ProductService {
@@ -14,4 +17,5 @@ public interface ProductService {
 
 	ResponseObject getProductByid(Integer id);
 
+  ProductDiscount getProductDiscount(Integer productId);
 }

@@ -1,6 +1,7 @@
 package com.fruitshop.service;
 
 import com.fruitshop.dto.request.LoginRequest;
+import com.fruitshop.dto.request.LogoutRequest;
 import com.fruitshop.dto.request.RegisterRequest;
 import com.fruitshop.dto.request.VerificationRequest;
 import com.fruitshop.model.ResponseObject;
@@ -11,4 +12,6 @@ public interface AuthenticationService {
   	ResponseObject register(RegisterRequest registerDto) throws MessagingException;
 	ResponseObject verification(VerificationRequest verificationDto) ;
 	ResponseObject getNewVerification(String username) throws MessagingException;
+
+  ResponseObject logOut(LogoutRequest request);
 }

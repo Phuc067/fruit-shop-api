@@ -33,7 +33,6 @@ public class Login implements Serializable, UserDetails{
 	
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private String username;
 	
 	@JsonIgnore

@@ -20,7 +20,7 @@ public class ProductResponse {
 	private String description;
 	private String origin;
 	private Double price;
-	private int discountPercentage;
+	private Float discountPercentage;
 	private Instant discountExpired;
 	private Integer quantity;
 	private String image;
