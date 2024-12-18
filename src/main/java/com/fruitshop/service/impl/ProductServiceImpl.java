@@ -4,9 +4,11 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fruitshop.utils.TimeUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -92,25 +94,22 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public ProductDiscount getProductDiscount(Integer productId) {
-     Object result = productRepository.getProductDiscount(productId);
-    ProductDiscount productDiscount =new ProductDiscount(0f, null);
+    Object result = productRepository.getProductDiscount(productId);
+    ProductDiscount productDiscount = new ProductDiscount(0f, null);
     if (result != null) {
-        Object[] values = (Object[]) result;
-        Float value = (Float) values[0];
-        Timestamp expiryDate = (Timestamp) values[1];
+      Object[] values = (Object[]) result;
+      Float value = (Float) values[0];
+      Timestamp expiryDate = (Timestamp) values[1];
 
-        productDiscount.setValue(value);
-        productDiscount.setExpiredDate(expiryDate);
+      productDiscount.setValue(value);
+      productDiscount.setExpiredDate(expiryDate);
     }
     return productDiscount;
   }
 
   @Override
   public ResponseObject createProduct(ProductRequest request) {
-    ResponseObject validationResponse = validate(request);
-    if (validationResponse != null) {
-      return validationResponse;
-    }
+    Category category = validate(null, request);
 
     Product product = ProductMapper.INSTANT.requestToEnity(request);
     productRepository.save(product);
@@ -119,24 +118,42 @@ public class ProductServiceImpl implements ProductService {
     return new ResponseObject(HttpStatus.ACCEPTED, "Thêm sản phẩm thành công", productResponse);
   }
 
-  private ResponseObject validate(ProductRequest request) {
-    if (request.getPrice() < 0)
-      return new ResponseObject(HttpStatus.BAD_REQUEST, "Giá sản phẩm không hợp lệ", null);
-    Boolean existsByTitle = productRepository.existsByTitle(request.getTitle());
+  @Override
+  @Transactional
+  public ResponseObject updateProduct(Integer id, ProductRequest request) {
+    Category category = validate(id, request);
+    Optional<Product> productDB = productRepository.findById(id);
+    if (productDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
+    Product product = productDB.get();
+    product.setTitle(request.getTitle());
+    product.setDescription(request.getDescription());
+    product.setOrigin(request.getOrigin());
+    product.setPrice(request.getPrice());
+    product.setQuantity(request.getQuantity());
+    product.setImage(request.getImage());
+    product.setCategory(category);
+    productRepository.save(product);
+    return new ResponseObject(HttpStatus.ACCEPTED, "Sửa thông tin sản phẩm thành công", product);
+  }
 
-    if (existsByTitle)
-      return new ResponseObject(HttpStatus.BAD_REQUEST, "Tên sản phẩm bị trùng", null);
+  private Category validate(Integer id, ProductRequest request) {
+    if (request.getPrice() <= 0)
+      throw  new CustomException(HttpStatus.BAD_REQUEST, "Giá sản phẩm không hợp lệ");
+     if (request.getQuantity() <= 0)
+       throw  new CustomException(HttpStatus.BAD_REQUEST, "Số lượng sản phẩm không hợp lệ");
+    Product product = productRepository.findByTitle(request.getTitle());
+    if (product != null && !Objects.equals(product.getId(), id))
+       throw  new CustomException(HttpStatus.BAD_REQUEST, "Tên sản phẩm bị trùng");
 
     Optional<Category> categoryDB = categoryRepository.findById(request.getCategory());
     if (categoryDB.isEmpty())
-      return new ResponseObject(HttpStatus.NOT_FOUND, "không tìm thấy danh mục sản phẩm", null);
+       throw  new CustomException(HttpStatus.NOT_FOUND, "không tìm thấy danh mục sản phẩm");
 
-    return null;
+    return categoryDB.get();
   }
 
   public Integer mapSortTypeToNumber(String sortType) {
 
-//		System.out.println(sortType+ " " + "price_asc" + sortType.equals("price_asc"));
     if (sortType.equals("price_asc"))
       return 1;
     if (sortType.equals("price_desc"))

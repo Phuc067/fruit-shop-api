@@ -16,13 +16,13 @@ import jakarta.persistence.LockModeType;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
 
-   @Query(value = "SELECT COALESCE(dc.value, 0) AS value, dc.expiry_date " +
-                   "FROM discounts dc " +
-                   "JOIN discount_details dc_dt ON dc.id = dc_dt.discount_id " +
-                   "WHERE dc_dt.product_id = :productId " +
-                   "AND DATE_ADD(NOW(), INTERVAL 7 HOUR) BETWEEN dc.effective_date AND dc.expiry_date " +
-                   "ORDER BY dc.value DESC LIMIT 1", nativeQuery = true)
-    Object getProductDiscount(@Param("productId") Integer productId);
+  @Query(value = "SELECT COALESCE(dc.value, 0) AS value, dc.expiry_date " +
+      "FROM discounts dc " +
+      "JOIN discount_details dc_dt ON dc.id = dc_dt.discount_id " +
+      "WHERE dc_dt.product_id = :productId " +
+      "AND DATE_ADD(NOW(), INTERVAL 7 HOUR) BETWEEN dc.effective_date AND dc.expiry_date " +
+      "ORDER BY dc.value DESC LIMIT 1", nativeQuery = true)
+  Object getProductDiscount(@Param("productId") Integer productId);
 
   Boolean existsByTitle(String title);
 
@@ -43,4 +43,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
   Page<Product> findProductsWithPaginationAndSorting(@Param("keyword") String keyword,
                                                      @Param("sortType") Integer sortType, Pageable pageable);
 
+  Product findByTitle(String title);
 }

@@ -13,6 +13,8 @@ public interface ProductService {
 
 	ResponseObject createProduct(ProductRequest request);
 
+  ResponseObject updateProduct(Integer id, ProductRequest request);
+
 	ResponseObject getPageProduct(Optional<Integer> pageNumber, Optional<Integer> amount, String keyword, String sortType);
 
 	ResponseObject getProductByid(Integer id);
