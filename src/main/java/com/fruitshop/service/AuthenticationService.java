@@ -9,7 +9,7 @@ import jakarta.mail.MessagingException;
 
 public interface AuthenticationService {
 	ResponseObject login(LoginRequest loginRequest);
-  	ResponseObject register(RegisterRequest registerDto) throws MessagingException;
+  ResponseObject register(RegisterRequest registerDto) throws MessagingException;
 	ResponseObject verification(VerificationRequest verificationDto) ;
 	ResponseObject getNewVerification(String username) throws MessagingException;
 

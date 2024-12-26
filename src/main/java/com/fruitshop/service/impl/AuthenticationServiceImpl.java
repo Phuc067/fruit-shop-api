@@ -5,6 +5,7 @@ import com.fruitshop.dto.request.LogoutRequest;
 import com.fruitshop.dto.request.RegisterRequest;
 import com.fruitshop.dto.request.VerificationRequest;
 import com.fruitshop.entity.Role;
+import com.fruitshop.exception.CustomException;
 import com.fruitshop.repository.*;
 import com.fruitshop.service.EmailSenderService;
 import com.fruitshop.utils.TaskManager;
@@ -33,6 +34,8 @@ import com.fruitshop.service.JwtService;
 import com.fruitshop.service.RefreshTokenService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledFuture;
 
@@ -73,9 +76,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
   @Override
   public ResponseObject login(LoginRequest loginRequest) {
-
-    Authentication authentication = authenticationManager
-        .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    Authentication authentication;
+    try {
+      authentication = authenticationManager
+          .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+    } catch (Exception e) {
+      throw new CustomException(HttpStatus.BAD_REQUEST, "Tài khoản hoặc mật khẩu không đúng");
+    }
     Login login = (Login) authentication.getPrincipal();
 
     if (ObjectUtils.isNotEmpty(login) && !login.getState()) {
@@ -100,35 +107,50 @@ public class AuthenticationServiceImpl implements AuthenticationService {
   @Transactional
   public ResponseObject register(RegisterRequest registerDto) throws MessagingException {
 
+    Map<String, String> errors = new HashMap<>();
     if (loginRepository.existsById(registerDto.getUsername())) {
-      return new ResponseObject(HttpStatus.CONFLICT, "Tên tài khoản đã tồn tại.", null);
+      errors.put("username", "Tên tài khoản đã tồn tại.");
     }
     if (loginRepository.existsByEmail(registerDto.getEmail())) {
-      return new ResponseObject(HttpStatus.CONFLICT, "Email đã được sử dụng bởi một tài khoản khác.", null);
+      errors.put("email", "Email đã được sử dụng bởi một tài khoản khác.");
+    }
+    System.out.println(errors.isEmpty());
+    if (!errors.isEmpty()) {
+      return new ResponseObject(HttpStatus.UNPROCESSABLE_ENTITY, "Thông tin không hợp lệ", errors);
     }
 
     String hashPassword = passwordEncoder.encode(registerDto.getPassword());
     registerDto.setPassword(hashPassword);
     Login login = Login.builder().email(registerDto.getEmail())
         .username(registerDto.getUsername())
-        .password(hashPassword).state(false).build();
+        .password(hashPassword).state(true).build();
     Optional<Role> role = roleRepository.findByName("CUSTOMER");
     if (role.isPresent())
       login.setRole(role.get());
 
-    String verifyCode = VerificationCodeGenerator.generate();
-    emailSenderService.sendVerificationEmail(login.getEmail(), login.getUsername(), verifyCode);
-    login.setOTP(verifyCode);
+//    String verifyCode = VerificationCodeGenerator.generate();
+//    emailSenderService.sendVerificationEmail(login.getEmail(), login.getUsername(), verifyCode);
+//    login.setOTP(verifyCode);
     loginRepository.save(login);
-    VerifyCodeManager verifyCodeManager = new VerifyCodeManager();
-    ScheduledFuture<?> scheduledFuture = verifyCodeManager.scheduleVerificationCleanup(SessionConstant.OTP_EXPIRE_TIME, login.getUsername(),
-        loginRepository);
-    TaskManager.addTask("otp-" + login.getUsername(), scheduledFuture);
+//    VerifyCodeManager verifyCodeManager = new VerifyCodeManager();
+//    ScheduledFuture<?> scheduledFuture = verifyCodeManager.scheduleVerificationCleanup(SessionConstant.OTP_EXPIRE_TIME, login.getUsername(),
+//        loginRepository);
+//    TaskManager.addTask("otp-" + login.getUsername(), scheduledFuture);
     User user = new User();
     user.setLogin(login);
     userRepository.save(user);
 
-    return new ResponseObject(HttpStatus.CREATED, "Tạo tài khoản thành công, hãy xác thực tài khoản để có thể sử dụng.", registerDto.getEmail());
+     RefreshToken refreshToken = refreshTokenService.createRefreshToken(login);
+
+    String jwtToken = "Bearer " + jwtService.generateToken(login);
+
+    UserResponse userResponse = UserMapper.INSTANT.entityToResponse(user);
+    userResponse.setUsername(login.getUsername());
+    userResponse.setEmail(login.getEmail());
+    int cartItem = 0;
+    if (ObjectUtils.isNotEmpty(user)) cartItem = cartDetailRepository.getCountProductByUserId(user.getId());
+
+    return new ResponseObject(HttpStatus.CREATED, "Tạo tài khoản thành công.", new AuthenticationResponse(jwtToken, refreshToken.getToken(), userResponse, cartItem));
   }
 
   @Override

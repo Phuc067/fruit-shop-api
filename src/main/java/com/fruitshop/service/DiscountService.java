@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface DiscountService {
   ResponseObject getPageDiscountNow(Optional<Integer> page, Optional<Integer> amount);
   ResponseObject createDiscount(DiscountRequest request);
+
+  ResponseObject updateDiscount(Integer id, DiscountRequest request);
 }

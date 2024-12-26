@@ -14,6 +14,8 @@ import java.util.TimeZone;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,7 +85,7 @@ public class VNPayServiceImpl implements VNPayService {
 		List<OrderDetail> orderDetails = orderDetailRepository.findByOrder(order);
 
 		for (OrderDetail orderDetail : orderDetails) {
-			amount += orderDetail.getQuantity() * orderDetail.getPrice();
+			amount += orderDetail.getQuantity() * orderDetail.getSalePrice();
 		}
 		amount = amount * 100;
 		Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -131,7 +133,9 @@ public class VNPayServiceImpl implements VNPayService {
 		{
 			Invoice invoice = Invoice.builder().date(now).totalAmount(transaction.getVnp_Amount()/100).order(order).build();
 			invoiceRepository.save(invoice);
-			orderService.UpdateOrderStateAndInsertLog(order,order.getState().getNextStatus(), now);
+      Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		  String authUsername = authentication.getName();
+			orderService.UpdateOrderStateAndInsertLog(order,order.getState().getNextStatus(), now, authUsername);
 			return new ResponseObject(HttpStatus.CREATED, "Đơn hàng của bạn đã được thanh toán thành công", null);
 		}
 		else {

@@ -20,4 +20,6 @@ public interface ProductService {
 	ResponseObject getProductByid(Integer id);
 
   ProductDiscount getProductDiscount(Integer productId);
+
+  ResponseObject deleteProduct(Integer id);
 }

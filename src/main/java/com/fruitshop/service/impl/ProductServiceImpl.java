@@ -7,7 +7,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.fruitshop.model.ProductIdNameProjection;
+import com.fruitshop.repository.OrderDetailRepository;
+import com.fruitshop.repository.SpRepository;
 import com.fruitshop.utils.TimeUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.StoredProcedureQuery;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -42,22 +47,26 @@ public class ProductServiceImpl implements ProductService {
   @Autowired
   private CategoryRepository categoryRepository;
 
+  @Autowired
+  private OrderDetailRepository orderDetailRepository;
+
+  @Autowired
+  private SpRepository spRepository;
+
   @Override
   public ResponseObject getAll() {
-    List<Product> products = productRepository.findAll();
-    List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
-    for (Product product : products) {
-      ProductResponse productResponse = getProductWithDiscount(product);
-      productResponses.add(productResponse);
-    }
-    return new ResponseObject(HttpStatus.ACCEPTED, "Lấy danh sách sản phẩm thành công", productResponses);
+    List<ProductIdNameProjection> products = productRepository.findAllBy();
+
+    return new ResponseObject(HttpStatus.ACCEPTED, "Lấy danh sách sản phẩm thành công", products);
   }
+
+
 
   @Override
   @Transactional
   public ResponseObject getPageProduct(Optional<Integer> pageNumber, Optional<Integer> amount, String keyword,
                                        String sortType) {
-    Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
+
 
     String sanitizedKeyword = keyword.isEmpty() ?
         null : "%" + keyword + "%";
@@ -66,20 +75,25 @@ public class ProductServiceImpl implements ProductService {
 
     System.out.println("Keyword: " + sanitizedKeyword);
     System.out.println("SortType: " + sanitizedSortType);
-
-    Page<Product> productPage = productRepository.findProductsWithPaginationAndSorting(sanitizedKeyword,
-        sanitizedSortType, pageable);
-    if (productPage.isEmpty())
+    System.out.println("Page: "+ pageNumber.get());
+    System.out.println("Amount: "+ amount.get());
+    Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
+    List<ProductRequest> productRequests = spRepository.getPageProduct(pageNumber.orElse(0), amount.orElse(10), sanitizedKeyword, sanitizedSortType);
+//    Page<Product> productPage = productRepository.findProductsWithPaginationAndSorting(sanitizedKeyword,
+//        sanitizedSortType, pageable);
+    if (productRequests.isEmpty())
       return new ResponseObject(HttpStatus.ACCEPTED, "Danh sách sản phẩm bị trống", null);
-
-    List<Product> products = productPage.getContent();
+    long total = keyword.isEmpty() ? productRepository.count(): productRepository.countByKeyword(sanitizedKeyword);
+    List<Product> products = ProductMapper.INSTANT.requestToEntityList(productRequests);
     List<ProductResponse> productResponses = new ArrayList<ProductResponse>();
     for (Product product : products) {
       ProductResponse productResponse = getProductWithDiscount(product);
+      Optional<Category> category = categoryRepository.findById(productResponse.getCategory().getId());
+      category.ifPresent(productResponse::setCategory);
       productResponses.add(productResponse);
     }
     Page<ProductResponse> productResponsePage = new PageImpl<>(productResponses, pageable,
-        productPage.getTotalElements());
+        total);
     return new ResponseObject(HttpStatus.OK, "Lấy danh sách sản phẩm thành công", productResponsePage);
   }
 
@@ -105,6 +119,16 @@ public class ProductServiceImpl implements ProductService {
       productDiscount.setExpiredDate(expiryDate);
     }
     return productDiscount;
+  }
+
+  @Override
+  public ResponseObject deleteProduct(Integer id) {
+    Optional<Product> productDB = productRepository.findById(id);
+    if(productDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
+    Product product = productDB.get();
+    if(orderDetailRepository.existsByProduct(product)) throw new CustomException(HttpStatus.BAD_REQUEST, "Sản phẩm này đã có trong đơn hàng của người dùng, không thể xóa");
+    productRepository.delete(product);
+    return new ResponseObject(HttpStatus.ACCEPTED, "Xoá sản phẩm thành công", null);
   }
 
   @Override
@@ -145,7 +169,7 @@ public class ProductServiceImpl implements ProductService {
     if (product != null && !Objects.equals(product.getId(), id))
        throw  new CustomException(HttpStatus.BAD_REQUEST, "Tên sản phẩm bị trùng");
 
-    Optional<Category> categoryDB = categoryRepository.findById(request.getCategory());
+    Optional<Category> categoryDB = categoryRepository.findById(request.getCategoryId());
     if (categoryDB.isEmpty())
        throw  new CustomException(HttpStatus.NOT_FOUND, "không tìm thấy danh mục sản phẩm");
 

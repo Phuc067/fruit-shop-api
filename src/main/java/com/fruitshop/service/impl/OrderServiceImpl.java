@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.fruitshop.entity.*;
 import com.fruitshop.service.ProductService;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,13 +24,6 @@ import com.fruitshop.constant.PaymentMethod;
 import com.fruitshop.dto.request.OrderRequest;
 import com.fruitshop.dto.response.OrderReponse;
 import com.fruitshop.dto.response.ProductDiscount;
-import com.fruitshop.entity.CartDetail;
-import com.fruitshop.entity.Order;
-import com.fruitshop.entity.OrderDetail;
-import com.fruitshop.entity.OrderLog;
-import com.fruitshop.entity.Product;
-import com.fruitshop.entity.ShippingInformation;
-import com.fruitshop.entity.User;
 import com.fruitshop.exception.CustomException;
 import com.fruitshop.mapper.OrderMapper;
 import com.fruitshop.model.ResponseObject;
@@ -78,16 +74,14 @@ public class OrderServiceImpl implements OrderService {
   @Transactional
   public ResponseObject createOrder(OrderRequest request) {
 
-    Optional<ShippingInformation> shippingInfoDB = shippingInformationRepository
-        .findById(request.getShippingInformationId());
+    Optional<ShippingInformation> shippingInfoDB = shippingInformationRepository.findById(request.getShippingInformationId());
 
     if (shippingInfoDB.isEmpty()) {
       throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy địa chỉ này");
     }
 
     Optional<User> userDB = userRepository.findById(request.getUserId());
-    if (userDB.isEmpty())
-      throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin người dùng");
+    if (userDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin người dùng");
     User user = userDB.get();
 
     if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
@@ -95,14 +89,10 @@ public class OrderServiceImpl implements OrderService {
 
     ShippingInformation shippingInfo = shippingInfoDB.get();
 
-    OrderStatus orderStatus = request.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName())
-        ? OrderStatus.AWAITING_PAYMENT
-        : OrderStatus.PENDING;
+    OrderStatus orderStatus = request.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName()) ? OrderStatus.AWAITING_PAYMENT : OrderStatus.PENDING;
 
     Instant orderTime = TimeUtils.getInstantNow();
-    Order order = Order.builder().id(RandomUtils.getUniqueId()).orderDate(orderTime).state(orderStatus)
-        .recipientName(shippingInfo.getRecipientName()).recipientAddress(shippingInfo.getShippingAdress())
-        .phoneNumber(shippingInfo.getPhone()).paymentMethod(request.getPaymentMethod()).user(user).build();
+    Order order = Order.builder().id(RandomUtils.getUniqueId()).orderDate(orderTime).state(orderStatus).recipientName(shippingInfo.getRecipientName()).recipientAddress(shippingInfo.getShippingAdress()).phoneNumber(shippingInfo.getPhone()).paymentMethod(request.getPaymentMethod()).user(user).build();
 
     orderRepository.save(order);
 
@@ -122,20 +112,17 @@ public class OrderServiceImpl implements OrderService {
 
     for (CartDetail cartDetail : cartDetails) {
 
-      Product product = productRepository.findProductForUpdate(cartDetail.getProduct().getId())
-          .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
+      Product product = productRepository.findProductForUpdate(cartDetail.getProduct().getId()).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Sản phẩm không tồn tại"));
 
       if (product.getQuantity() < cartDetail.getQuantity())
-        throw new CustomException(HttpStatus.FORBIDDEN,
-            "Sản phẩm " + product.getTitle() + " Không còn đủ số lượng");
+        throw new CustomException(HttpStatus.FORBIDDEN, "Sản phẩm " + product.getTitle() + " Không còn đủ số lượng");
 
 
       ProductDiscount productDiscount = productService.getProductDiscount(product.getId());
 
       Double salePrice = product.getPrice() * (1 - productDiscount.getValue() / 100);
 
-      OrderDetail orderDetail = OrderDetail.builder().Quantity(cartDetail.getQuantity()).price(product.getPrice())
-          .order(order).salePrice(salePrice).product(product).build();
+      OrderDetail orderDetail = OrderDetail.builder().Quantity(cartDetail.getQuantity()).price(product.getPrice()).order(order).salePrice(salePrice).product(product).build();
       orderDetails.add(orderDetail);
 
       Integer oldQuantity = product.getQuantity();
@@ -148,15 +135,13 @@ public class OrderServiceImpl implements OrderService {
 
     orderDetailRepository.saveAll(orderDetails);
 
-    OrderLog orderLog = OrderLog.builder().order(order).state(orderStatus)
-        .PerformedBy(user.getLogin().getUsername()).time(orderTime).log(orderStatus.getLogMessage()).build();
+    OrderLog orderLog = OrderLog.builder().order(order).state(orderStatus).PerformedBy(user.getLogin().getUsername()).time(orderTime).log(orderStatus.getLogMessage()).build();
     orderLogRepository.save(orderLog);
     return new ResponseObject(HttpStatus.ACCEPTED, "Tạo đơn hàng thành công", order);
   }
 
   @Override
-  public ResponseObject getPageOrder(Integer userId, Optional<Integer> pageNumber, Optional<Integer> amount,
-                                     String state) {
+  public ResponseObject getPageOrder(Integer userId, Optional<Integer> pageNumber, Optional<Integer> amount, String state) {
     try {
       Pageable pageable = PageRequest.of(pageNumber.orElse(0), amount.orElse(10));
       Page<Order> orderPage = getPageOrderByRole(userId, pageable, state);
@@ -166,8 +151,7 @@ public class OrderServiceImpl implements OrderService {
       for (OrderReponse orderReponse : orderReponses) {
         List<OrderDetail> orderDetails = orderDetailRepository.findByOrderId(orderReponse.getId());
         orderReponse.setOrderDetails(orderDetails);
-        OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(),
-            OrderStatus.fromDisplayName(orderReponse.getState()));
+        OrderLog lastOrderLog = orderLogRepository.findByOrderIdAndState(orderReponse.getId(), OrderStatus.fromDisplayName(orderReponse.getState()));
         orderReponse.setOrderLog(lastOrderLog);
         Boolean isPaid = invoiceRepository.existsByOrderId(orderReponse.getId());
         orderReponse.setIsPaid(isPaid);
@@ -182,18 +166,16 @@ public class OrderServiceImpl implements OrderService {
     }
   }
 
-  private Page<Order> getPageOrderByRole(Integer userId, Pageable pageable,
-                                         String state) {
+  private Page<Order> getPageOrderByRole(Integer userId, Pageable pageable, String state) {
     List<OrderStatus> states = new ArrayList<OrderStatus>();
+
     if (!state.equals("")) {
       states = OrderStatus.parseStates(state);
     }
     Optional<User> userDB = Optional.empty();
-    ;
     if (ObjectUtils.isNotEmpty(userId)) {
       userDB = userRepository.findById(userId);
-      if (userDB.isEmpty())
-        throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng");
+      if (userDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy ngươì dùng");
     }
     Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
     if (isAdminAccess) {
@@ -207,8 +189,7 @@ public class OrderServiceImpl implements OrderService {
       User user = userDB.get();
       if (!AuthenticationUtils.isAuthenticate(user.getLogin().getUsername()))
         throw new CustomException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này");
-      return state.equals("") ? orderRepository.findByUserId(userId, pageable)
-          : orderRepository.findByUserIdAndState(userId, states, pageable);
+      return state.equals("") ? orderRepository.findByUserId(userId, pageable) : orderRepository.findByUserIdAndState(userId, states, pageable);
     }
   }
 
@@ -216,8 +197,7 @@ public class OrderServiceImpl implements OrderService {
   @Transactional
   public ResponseObject updateStatus(String id) {
     Optional<Order> orderDB = orderRepository.findById(id);
-    if (orderDB.isEmpty())
-      return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+    if (orderDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
 
     Order order = orderDB.get();
 
@@ -227,28 +207,35 @@ public class OrderServiceImpl implements OrderService {
 
     if (orderStatus.requiresAdminAccess() && !isAdminAccess)
       return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
-    else if (AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
+    else if (!isAdminAccess && !AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()) )
       return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
 
     Instant now = TimeUtils.getInstantNow();
     OrderStatus nextStatus = orderStatus.getNextStatus();
-    UpdateOrderStateAndInsertLog(order, orderStatus, now);
-    return new ResponseObject(HttpStatus.ACCEPTED, "Cập nhật trạng thái đơn hàng thành công",
-        nextStatus.getDisplayName());
+
+    if (nextStatus.equals(OrderStatus.DELIVERED) && !order.getPaymentMethod().equals(PaymentMethod.VNPAY.getDisplayName())) {
+      List<OrderDetail> orderDetails = orderDetailRepository.findByOrder(order);
+      Double total = calculateTotalAmount(orderDetails);
+      Invoice invoice = Invoice.builder().order(order).date(now).totalAmount(total).build();
+      invoiceRepository.save(invoice);
+    }
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String authUsername = authentication.getName();
+    UpdateOrderStateAndInsertLog(order, nextStatus, now, authUsername);
+    return new ResponseObject(HttpStatus.ACCEPTED, "Cập nhật trạng thái đơn hàng thành công", nextStatus.getDisplayName());
   }
 
   @Override
   @Transactional
   public ResponseObject cancelOrder(String orderId) {
     Optional<Order> orderDB = orderRepository.findById(orderId);
-    if (orderDB.isEmpty())
-      return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
+    if (orderDB.isEmpty()) return new ResponseObject(HttpStatus.NOT_FOUND, "Không tìm thấy đơn hàng", null);
 
     Order order = orderDB.get();
 
     Boolean isAdminAccess = AuthenticationUtils.isAdminAccess();
 
-    if (!isAdminAccess && AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
+    if (!isAdminAccess && !AuthenticationUtils.isAuthenticate(order.getUser().getLogin().getUsername()))
       return new ResponseObject(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập vào tài nguyên này", null);
     OrderStatus orderStatus = order.getState();
 
@@ -257,19 +244,31 @@ public class OrderServiceImpl implements OrderService {
 
     OrderStatus cancel = OrderStatus.CANCELED;
     Instant now = TimeUtils.getInstantNow();
-    UpdateOrderStateAndInsertLog(order, cancel, now);
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String authUsername = authentication.getName();
+    UpdateOrderStateAndInsertLog(order, cancel, now, authUsername);
     return new ResponseObject(HttpStatus.ACCEPTED, "Hủy đơn hàng thành công", cancel.getDisplayName());
   }
 
 
   @Override
   @Transactional
-  public void UpdateOrderStateAndInsertLog(Order order, OrderStatus orderStatus, Instant time) {
+  public void UpdateOrderStateAndInsertLog(Order order, OrderStatus orderStatus, Instant time, String performedBy) {
     order.setState(orderStatus);
     orderRepository.save(order);
-    OrderLog orderLog = OrderLog.builder().order(order).state(orderStatus)
-        .PerformedBy(order.getUser().getLogin().getUsername()).time(time).log(orderStatus.getLogMessage()).build();
+    OrderLog orderLog = OrderLog.builder().order(order).state(orderStatus).PerformedBy(performedBy).time(time).log(orderStatus.getLogMessage()).build();
     orderLogRepository.save(orderLog);
   }
 
+  private Double calculateTotalAmount(List<OrderDetail> orderDetails) {
+    if (orderDetails == null || orderDetails.isEmpty()) {
+      return 0.0;
+    }
+
+    return orderDetails.stream().mapToDouble(orderDetail -> {
+      double price = orderDetail.getSalePrice() != null ? orderDetail.getSalePrice() : orderDetail.getPrice();
+      return price * orderDetail.getQuantity();
+    }).sum();
+  }
 }
+

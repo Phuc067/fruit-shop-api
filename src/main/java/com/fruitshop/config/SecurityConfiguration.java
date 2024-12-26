@@ -39,9 +39,7 @@ public class SecurityConfiguration {
         		ApiPath.REGISTER,
         		ApiPath.REFRESH_TOKEN,
             ApiPath.PUBLIC + "**").permitAll()
-        .requestMatchers(HttpMethod.POST, ApiPath.PRODUCT).hasRole("ADMIN")
-        .requestMatchers(HttpMethod.PUT, ApiPath.PRODUCT).hasRole("ADMIN")
-        .requestMatchers(HttpMethod.DELETE, ApiPath.PRODUCT).hasRole("ADMIN")
+        .requestMatchers(ApiPath.PRODUCT).hasRole("ADMIN")
         .requestMatchers(ApiPath.DISCOUNT).hasRole("ADMIN")
         .anyRequest().authenticated()
         .and()

@@ -23,9 +23,10 @@ public interface ProductMapper {
 	
 	ProductResponse entityToResponse(Product product);
 	
-	@Mapping(source = "category", target = "category", qualifiedByName = "mapCategory")
+	@Mapping(source = "categoryId", target = "category", qualifiedByName = "mapCategory")
 	Product requestToEnity(ProductRequest request);
-	
+
+  List<Product> requestToEntityList(List<ProductRequest> requests);
 	
 	@Named("mapCategory")
 	default Category mapCategory(Integer categoryId) {

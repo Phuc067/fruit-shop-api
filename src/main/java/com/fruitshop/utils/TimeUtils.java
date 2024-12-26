@@ -9,33 +9,38 @@ import java.time.format.DateTimeFormatter;
 
 public class TimeUtils {
 
-	private static final Instant gmt_7(Instant time) {
-		Duration sevenHours = Duration.ofHours(7);
-		Instant newInstant = time.plus(sevenHours);
-		return newInstant;
-	}
+  public static final Instant gmt_7(Instant time) {
+    Duration sevenHours = Duration.ofHours(7);
+    Instant newInstant = time.plus(sevenHours);
+    return newInstant;
+  }
 
-	public static final Instant getInstantNow() {
-		Instant currentInstant = Instant.now();
-		return gmt_7(currentInstant);
-	}
+  public static final Instant subtract7Hours(Instant time) {
+    Duration sevenHours = Duration.ofHours(7);
+    return time.minus(sevenHours);
+  }
 
-	public static final Instant stringTimeToInstant(String dateTimeString) {
-		
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+  public static final Instant getInstantNow() {
+    Instant currentInstant = Instant.now();
+    return gmt_7(currentInstant);
+  }
 
-		LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString, formatter);
+  public static final Instant stringTimeToInstant(String dateTimeString) {
 
-		Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-		return instant;
-	}
+    LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString, formatter);
 
-   public static final Instant timeStampToInstant(Timestamp timestamp) {
-        if (timestamp == null) {
-            return null;
-        }
-        Instant instant = timestamp.toInstant();
-        return gmt_7(instant);
+    Instant instant = localDateTime.toInstant(ZoneOffset.UTC);
+
+    return instant;
+  }
+
+  public static final Instant timeStampToInstant(Timestamp timestamp) {
+    if (timestamp == null) {
+      return null;
     }
+    Instant instant = timestamp.toInstant();
+    return gmt_7(instant);
+  }
 }

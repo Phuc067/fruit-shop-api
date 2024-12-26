@@ -13,5 +13,5 @@ public interface OrderService {
 	ResponseObject getPageOrder(Integer userId, Optional<Integer> pageNumber, Optional<Integer> among, String state);
 	ResponseObject updateStatus(String id);
 	ResponseObject cancelOrder(String orderId);
-	void UpdateOrderStateAndInsertLog(Order order,OrderStatus orderStatus, Instant time);
+	void UpdateOrderStateAndInsertLog(Order order,OrderStatus orderStatus, Instant time, String performedBy);
 }

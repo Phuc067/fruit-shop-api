@@ -14,7 +14,7 @@ public enum OrderStatus {
     PREPARING("preparing", "Đơn hàng đang được người bán chuẩn bị"),
     SHIPPING("shipping", "Đơn hàng đang được vận chuyển"), 
     DELIVERED("delivered", "Khách hàng đã nhận đơn hàng"),
-    CANCELED("cancelled", "Đơn hàng đã được hủy"),
+    CANCELED("cancelled", "Đơn hàng đã bị hủy"),
     RETURNED("returned", "Đơn hàng đang được trả về"), 
     REFUNDED("refunded", "Đã hoàn tiền cho đơn hàng");
 

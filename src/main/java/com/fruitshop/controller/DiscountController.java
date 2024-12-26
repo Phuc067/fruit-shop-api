@@ -15,20 +15,25 @@ import java.util.Optional;
 @RequestMapping(ApiPath.DISCOUNT)
 public class DiscountController {
 
-    @Autowired
-    private DiscountService discountService;
+  @Autowired
+  private DiscountService discountService;
 
-    @GetMapping("")
-    public ResponseEntity<ResponseObject> getDiscountNow(@RequestParam("page") Optional<Integer> pageNumber,
-			@RequestParam("amount") Optional<Integer> amount)
-    {
-        ResponseObject responseObject = discountService.getPageDiscountNow(pageNumber, amount);
-        return ResponseEntity.ok(responseObject);
-    }
+  @GetMapping("")
+  public ResponseEntity<ResponseObject> getDiscountNow(@RequestParam("page") Optional<Integer> pageNumber,
+                                                       @RequestParam("amount") Optional<Integer> amount) {
+    ResponseObject responseObject = discountService.getPageDiscountNow(pageNumber, amount);
+    return ResponseEntity.ok(responseObject);
+  }
 
-    @PostMapping("")
-  public ResponseEntity<ResponseObject> createDiscount(@RequestBody DiscountRequest request){
-      ResponseObject responseObject = discountService.createDiscount(request);
-        return ResponseEntity.ok(responseObject);
-    }
+  @PostMapping("")
+  public ResponseEntity<ResponseObject> createDiscount(@RequestBody DiscountRequest request) {
+    ResponseObject responseObject = discountService.createDiscount(request);
+    return ResponseEntity.ok(responseObject);
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<ResponseObject> updateDiscount(@PathVariable("id") Integer id, @RequestBody DiscountRequest request) {
+    ResponseObject responseObject = discountService.updateDiscount(id, request);
+    return ResponseEntity.ok(responseObject);
+  }
 }

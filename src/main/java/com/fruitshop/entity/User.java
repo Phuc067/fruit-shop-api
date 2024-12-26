@@ -42,8 +42,7 @@ public class User implements Serializable{
 	private Date birthDay;
 	private String gender;
 	private String avatar;
-	
-	
+
 	@OneToOne
 	@JoinColumn(name = "username", referencedColumnName = "username")
 	private Login login;

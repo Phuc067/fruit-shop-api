@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductRequest {
-
+  private String id;
 	private String title;
 	private String description;
 	private String origin;
 	private Double price;
 	private Integer quantity;
 	private String image;
-	private Integer category;
+	private Integer categoryId;
 }

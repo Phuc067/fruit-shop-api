@@ -22,9 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -65,9 +63,19 @@ public class DiscountServiceImpl implements DiscountService {
   @Transactional
   public ResponseObject createDiscount(DiscountRequest request) {
     validateDiscountRequest(request);
+    Instant effectiveDate = TimeUtils.gmt_7(request.getEffectiveDate());
+    Instant expiryDate = TimeUtils.gmt_7(request.getExpiryDate());
+
+    Map<String, String> errors = new HashMap<>();
+    if(effectiveDate.isBefore(TimeUtils.getInstantNow())) errors.put("effectiveDate","Thời gian bắt đầu khuyến mãi không hợp lệ" );
+    if(expiryDate.isBefore(effectiveDate.plusMillis(1000*60))) errors.put("expiryDate", "Thời gian khuyến mãi không được ít hơn 1 phút");
+    if (!errors.isEmpty()) {
+      return new ResponseObject(HttpStatus.UNPROCESSABLE_ENTITY, "Thông tin không hợp lệ", errors);
+    }
+
     Discount discount = Discount.builder()
-        .effectiveDate(request.getEffectiveDate())
-        .expiryDate(request.getExpiryDate())
+        .effectiveDate(effectiveDate)
+        .expiryDate(expiryDate)
         .value(request.getValue()).build();
     discountRepository.save(discount);
     for (Integer productId : request.getProducts()) {
@@ -86,6 +94,44 @@ public class DiscountServiceImpl implements DiscountService {
     return new ResponseObject(HttpStatus.ACCEPTED, "Thêm khuyến mãi thành công", discount);
   }
 
+  @Override
+  @Transactional
+  public ResponseObject updateDiscount(Integer id, DiscountRequest request) {
+    validateDiscountRequest(request);
+    Optional<Discount> discountDB = discountRepository.findById(id);
+    if (discountDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy khuyến mãi");
+    Discount discount = discountDB.get();
+    discount.setValue(request.getValue());
+    discountRepository.save(discount);
+
+    List<DiscountDetail> discountDetails = discountDetailRepository.findByDiscount(discount);
+
+    List<Integer> existingProductIds = discountDetails.stream()
+        .map(DiscountDetail::getProduct)
+        .map(Product::getId)
+        .toList();
+
+    for (Integer productId : request.getProducts()) {
+      if (!existingProductIds.contains(productId)) {
+        DiscountDetail newDetail = new DiscountDetail();
+        newDetail.setDiscount(discount);
+        Optional<Product> productDB = productRepository.findById(productId);
+        if(productDB.isEmpty()) throw new CustomException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm");
+        newDetail.setProduct(productDB.get());
+        discountDetailRepository.save(newDetail);
+      }
+    }
+
+    for (DiscountDetail discountDetail : discountDetails) {
+      Integer productId = discountDetail.getProduct().getId();
+      if (!request.getProducts().contains(productId)) {
+        discountDetailRepository.delete(discountDetail);
+      }
+    }
+
+    return new ResponseObject(HttpStatus.ACCEPTED, "Sửa thông tin khuyến mãi thành công", discount);
+  }
+
   private void validateDiscountRequest(DiscountRequest request) {
     if (request.getEffectiveDate() == null) {
       throw new CustomException(HttpStatus.BAD_REQUEST, "Ngày bắt đầu không được để trống.");
@@ -99,12 +145,13 @@ public class DiscountServiceImpl implements DiscountService {
       throw new CustomException(HttpStatus.BAD_REQUEST, "Thời gian hết hạn phải sau ngày bắt đầu.");
     }
 
-    if (request.getValue() == null || request.getValue() <= 0) {
-      throw new CustomException(HttpStatus.BAD_REQUEST, "Giá trị giảm phải lớn hơn 0.");
+    if (request.getValue() == null || request.getValue() <= 0 ||request.getValue() >100) {
+      throw new CustomException(HttpStatus.BAD_REQUEST, "Giá trị giảm từ 0 - 100.");
     }
 
     if (request.getProducts() == null || request.getProducts().isEmpty()) {
       throw new CustomException(HttpStatus.BAD_REQUEST, "Danh sách sản phẩm không được để trống");
     }
   }
+
 }
